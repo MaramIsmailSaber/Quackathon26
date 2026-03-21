@@ -5,6 +5,7 @@ No HTTP or routing concerns belong here.
 """
 
 import logging
+from collections import defaultdict
 
 from sqlalchemy.orm import Session
 
@@ -38,3 +39,44 @@ def get_transactions_by_account(db: Session, account_id: str) -> list[Transactio
             exc_info=True,
         )
         raise
+
+
+def categorize_transaction(description: str) -> str:
+    """
+    Auto-categorize a transaction based on description keywords.
+    Expand this dictionary as needed for more categories.
+    """
+    keyword_to_category = {
+        "groceries": ["aldi", "lidl", "sainsbury", "tesco", "asda", "morrisons"],
+        "transport": ["xplore", "lothian buses", "scotrail", "bus", "train", "ticket"],
+        "shopping": ["amazon", "waterstones", "boots"],
+        "eating out": ["brewdog", "greggs", "nando", "pret a manger", "phoenix bar"],
+        "entertainment": ["odeon", "film", "cinema"],
+        "subscriptions": ["spotify", "netflix", "icloud", "ee mobile"],
+        "utilities": ["scottish water", "broadband", "electricity", "gas"],
+        "housing": ["rent", "accommodation"],
+        "health": ["pharmacy", "doctor", "nhs"],
+        "education": ["university", "library", "textbook", "dundee"],
+        "income": ["wages", "loan", "saas", "salary"],
+        "transfers": ["transfer"],
+    }
+    
+    desc_lower = description.lower()
+    for category, keywords in keyword_to_category.items():
+        if any(keyword in desc_lower for keyword in keywords):
+            return category.capitalize()  # e.g., "Groceries"
+    return "Other"  # Default if no match
+
+
+def get_categorized_transactions(db: Session, account_id: str) -> dict[str, list[Transaction]]:
+    """
+    Fetch transactions and group by category. Auto-categorize if category is missing or 'Other'.
+    """
+    transactions = get_transactions_by_account(db, account_id)
+    categorized = defaultdict(list)
+    
+    for txn in transactions:
+        category = txn.category if txn.category != "Other" else categorize_transaction(txn.description)
+        categorized[category].append(txn)
+    
+    return dict(categorized)

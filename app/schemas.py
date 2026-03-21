@@ -41,3 +41,19 @@ class TransactionListResponse(BaseModel):
     account: AccountOut
     transaction_count: int
     transactions: list[TransactionOut]
+
+
+class TransactionPattern(BaseModel):
+    description: str
+    amount_pence: int
+    category: str
+    transaction_type: str
+    occurrences: int
+    dates: list[str]
+    pattern_type: str
+
+
+class CategorizedTransactionsResponse(BaseModel):
+    account: AccountOut
+    categorized: dict[str, list[TransactionOut]]
+    patterns: list[TransactionPattern]
