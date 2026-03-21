@@ -40,7 +40,7 @@
     "account_id": "58bc0ea0-f826-478b-af66-dbbd5e044819",
     "date": "2026-01-04T00:00:00Z",
     "description": "Iceland Foods",
-    "amount_pence": 998,
+    "amount_pence": -998,
     "currency": "GBP",
     "category": "Groceries",
     "transaction_type": "DEBIT",

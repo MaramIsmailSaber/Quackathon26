@@ -1,0 +1,566 @@
+{
+  "summary": {
+    "currency": null,
+    "transaction_count": 150,
+    "account_count": 3,
+    "total_money_in_pence": 102420,
+    "total_money_out_pence": 998,
+    "net_flow_pence": 101422
+  },
+  "per_account": [
+    {
+      "account_id": "2ebeb55d-9d98-4fa7-b4a7-3dfa2b8ce381",
+      "money_in_pence": 42020,
+      "money_out_pence": 0,
+      "net_flow_pence": 42020,
+      "transaction_count": 50
+    },
+    {
+      "account_id": "58bc0ea0-f826-478b-af66-dbbd5e044819",
+      "money_in_pence": 34399,
+      "money_out_pence": 998,
+      "net_flow_pence": 33401,
+      "transaction_count": 50
+    },
+    {
+      "account_id": "6e08b237-0b2d-472a-bb5b-e2f335e878a4",
+      "money_in_pence": 26001,
+      "money_out_pence": 0,
+      "net_flow_pence": 26001,
+      "transaction_count": 50
+    }
+  ],
+  "per_date": [
+    {
+      "date": "2026-01-01T00:00:00Z",
+      "money_in_pence": 321,
+      "money_out_pence": 0,
+      "net_flow_pence": 321
+    },
+    {
+      "date": "2026-01-02T00:00:00Z",
+      "money_in_pence": 535,
+      "money_out_pence": 0,
+      "net_flow_pence": 535
+    },
+    {
+      "date": "2026-01-03T00:00:00Z",
+      "money_in_pence": 769,
+      "money_out_pence": 0,
+      "net_flow_pence": 769
+    },
+    {
+      "date": "2026-01-04T00:00:00Z",
+      "money_in_pence": 672,
+      "money_out_pence": 998,
+      "net_flow_pence": -326
+    },
+    {
+      "date": "2026-01-06T00:00:00Z",
+      "money_in_pence": 2156,
+      "money_out_pence": 0,
+      "net_flow_pence": 2156
+    },
+    {
+      "date": "2026-01-07T00:00:00Z",
+      "money_in_pence": 735,
+      "money_out_pence": 0,
+      "net_flow_pence": 735
+    },
+    {
+      "date": "2026-01-08T00:00:00Z",
+      "money_in_pence": 2405,
+      "money_out_pence": 0,
+      "net_flow_pence": 2405
+    },
+    {
+      "date": "2026-01-09T00:00:00Z",
+      "money_in_pence": 1874,
+      "money_out_pence": 0,
+      "net_flow_pence": 1874
+    },
+    {
+      "date": "2026-01-10T00:00:00Z",
+      "money_in_pence": 2683,
+      "money_out_pence": 0,
+      "net_flow_pence": 2683
+    },
+    {
+      "date": "2026-01-11T00:00:00Z",
+      "money_in_pence": 858,
+      "money_out_pence": 0,
+      "net_flow_pence": 858
+    },
+    {
+      "date": "2026-01-12T00:00:00Z",
+      "money_in_pence": 801,
+      "money_out_pence": 0,
+      "net_flow_pence": 801
+    },
+    {
+      "date": "2026-01-14T00:00:00Z",
+      "money_in_pence": 591,
+      "money_out_pence": 0,
+      "net_flow_pence": 591
+    },
+    {
+      "date": "2026-01-16T00:00:00Z",
+      "money_in_pence": 867,
+      "money_out_pence": 0,
+      "net_flow_pence": 867
+    },
+    {
+      "date": "2026-01-17T00:00:00Z",
+      "money_in_pence": 625,
+      "money_out_pence": 0,
+      "net_flow_pence": 625
+    },
+    {
+      "date": "2026-01-18T00:00:00Z",
+      "money_in_pence": 2340,
+      "money_out_pence": 0,
+      "net_flow_pence": 2340
+    },
+    {
+      "date": "2026-01-19T00:00:00Z",
+      "money_in_pence": 1056,
+      "money_out_pence": 0,
+      "net_flow_pence": 1056
+    },
+    {
+      "date": "2026-01-21T00:00:00Z",
+      "money_in_pence": 671,
+      "money_out_pence": 0,
+      "net_flow_pence": 671
+    },
+    {
+      "date": "2026-01-22T00:00:00Z",
+      "money_in_pence": 1937,
+      "money_out_pence": 0,
+      "net_flow_pence": 1937
+    },
+    {
+      "date": "2026-01-23T00:00:00Z",
+      "money_in_pence": 1302,
+      "money_out_pence": 0,
+      "net_flow_pence": 1302
+    },
+    {
+      "date": "2026-01-24T00:00:00Z",
+      "money_in_pence": 2137,
+      "money_out_pence": 0,
+      "net_flow_pence": 2137
+    },
+    {
+      "date": "2026-01-25T00:00:00Z",
+      "money_in_pence": 736,
+      "money_out_pence": 0,
+      "net_flow_pence": 736
+    },
+    {
+      "date": "2026-01-26T00:00:00Z",
+      "money_in_pence": 422,
+      "money_out_pence": 0,
+      "net_flow_pence": 422
+    },
+    {
+      "date": "2026-01-27T00:00:00Z",
+      "money_in_pence": 451,
+      "money_out_pence": 0,
+      "net_flow_pence": 451
+    },
+    {
+      "date": "2026-01-30T00:00:00Z",
+      "money_in_pence": 1468,
+      "money_out_pence": 0,
+      "net_flow_pence": 1468
+    },
+    {
+      "date": "2026-01-31T00:00:00Z",
+      "money_in_pence": 2764,
+      "money_out_pence": 0,
+      "net_flow_pence": 2764
+    },
+    {
+      "date": "2026-02-01T00:00:00Z",
+      "money_in_pence": 2664,
+      "money_out_pence": 0,
+      "net_flow_pence": 2664
+    },
+    {
+      "date": "2026-02-02T00:00:00Z",
+      "money_in_pence": 2055,
+      "money_out_pence": 0,
+      "net_flow_pence": 2055
+    },
+    {
+      "date": "2026-02-03T00:00:00Z",
+      "money_in_pence": 586,
+      "money_out_pence": 0,
+      "net_flow_pence": 586
+    },
+    {
+      "date": "2026-02-05T00:00:00Z",
+      "money_in_pence": 1859,
+      "money_out_pence": 0,
+      "net_flow_pence": 1859
+    },
+    {
+      "date": "2026-02-06T00:00:00Z",
+      "money_in_pence": 1121,
+      "money_out_pence": 0,
+      "net_flow_pence": 1121
+    },
+    {
+      "date": "2026-02-07T00:00:00Z",
+      "money_in_pence": 909,
+      "money_out_pence": 0,
+      "net_flow_pence": 909
+    },
+    {
+      "date": "2026-02-08T00:00:00Z",
+      "money_in_pence": 830,
+      "money_out_pence": 0,
+      "net_flow_pence": 830
+    },
+    {
+      "date": "2026-02-09T00:00:00Z",
+      "money_in_pence": 896,
+      "money_out_pence": 0,
+      "net_flow_pence": 896
+    },
+    {
+      "date": "2026-02-10T00:00:00Z",
+      "money_in_pence": 1844,
+      "money_out_pence": 0,
+      "net_flow_pence": 1844
+    },
+    {
+      "date": "2026-02-11T00:00:00Z",
+      "money_in_pence": 1175,
+      "money_out_pence": 0,
+      "net_flow_pence": 1175
+    },
+    {
+      "date": "2026-02-12T00:00:00Z",
+      "money_in_pence": 1667,
+      "money_out_pence": 0,
+      "net_flow_pence": 1667
+    },
+    {
+      "date": "2026-02-14T00:00:00Z",
+      "money_in_pence": 1773,
+      "money_out_pence": 0,
+      "net_flow_pence": 1773
+    },
+    {
+      "date": "2026-02-15T00:00:00Z",
+      "money_in_pence": 2359,
+      "money_out_pence": 0,
+      "net_flow_pence": 2359
+    },
+    {
+      "date": "2026-02-17T00:00:00Z",
+      "money_in_pence": 2345,
+      "money_out_pence": 0,
+      "net_flow_pence": 2345
+    },
+    {
+      "date": "2026-02-18T00:00:00Z",
+      "money_in_pence": 1064,
+      "money_out_pence": 0,
+      "net_flow_pence": 1064
+    },
+    {
+      "date": "2026-02-19T00:00:00Z",
+      "money_in_pence": 627,
+      "money_out_pence": 0,
+      "net_flow_pence": 627
+    },
+    {
+      "date": "2026-02-20T00:00:00Z",
+      "money_in_pence": 1350,
+      "money_out_pence": 0,
+      "net_flow_pence": 1350
+    },
+    {
+      "date": "2026-02-21T00:00:00Z",
+      "money_in_pence": 388,
+      "money_out_pence": 0,
+      "net_flow_pence": 388
+    },
+    {
+      "date": "2026-02-22T00:00:00Z",
+      "money_in_pence": 2813,
+      "money_out_pence": 0,
+      "net_flow_pence": 2813
+    },
+    {
+      "date": "2026-02-23T00:00:00Z",
+      "money_in_pence": 1551,
+      "money_out_pence": 0,
+      "net_flow_pence": 1551
+    },
+    {
+      "date": "2026-02-24T00:00:00Z",
+      "money_in_pence": 1732,
+      "money_out_pence": 0,
+      "net_flow_pence": 1732
+    },
+    {
+      "date": "2026-02-25T00:00:00Z",
+      "money_in_pence": 1163,
+      "money_out_pence": 0,
+      "net_flow_pence": 1163
+    },
+    {
+      "date": "2026-03-01T00:00:00Z",
+      "money_in_pence": 1935,
+      "money_out_pence": 0,
+      "net_flow_pence": 1935
+    },
+    {
+      "date": "2026-03-02T00:00:00Z",
+      "money_in_pence": 656,
+      "money_out_pence": 0,
+      "net_flow_pence": 656
+    },
+    {
+      "date": "2026-03-04T00:00:00Z",
+      "money_in_pence": 518,
+      "money_out_pence": 0,
+      "net_flow_pence": 518
+    },
+    {
+      "date": "2026-03-05T00:00:00Z",
+      "money_in_pence": 3689,
+      "money_out_pence": 0,
+      "net_flow_pence": 3689
+    },
+    {
+      "date": "2026-03-06T00:00:00Z",
+      "money_in_pence": 1249,
+      "money_out_pence": 0,
+      "net_flow_pence": 1249
+    },
+    {
+      "date": "2026-03-07T00:00:00Z",
+      "money_in_pence": 1497,
+      "money_out_pence": 0,
+      "net_flow_pence": 1497
+    },
+    {
+      "date": "2026-03-08T00:00:00Z",
+      "money_in_pence": 943,
+      "money_out_pence": 0,
+      "net_flow_pence": 943
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "money_in_pence": 550,
+      "money_out_pence": 0,
+      "net_flow_pence": 550
+    },
+    {
+      "date": "2026-03-10T00:00:00Z",
+      "money_in_pence": 1281,
+      "money_out_pence": 0,
+      "net_flow_pence": 1281
+    },
+    {
+      "date": "2026-03-12T00:00:00Z",
+      "money_in_pence": 2327,
+      "money_out_pence": 0,
+      "net_flow_pence": 2327
+    },
+    {
+      "date": "2026-03-15T00:00:00Z",
+      "money_in_pence": 3098,
+      "money_out_pence": 0,
+      "net_flow_pence": 3098
+    },
+    {
+      "date": "2026-03-16T00:00:00Z",
+      "money_in_pence": 2389,
+      "money_out_pence": 0,
+      "net_flow_pence": 2389
+    },
+    {
+      "date": "2026-03-17T00:00:00Z",
+      "money_in_pence": 2294,
+      "money_out_pence": 0,
+      "net_flow_pence": 2294
+    },
+    {
+      "date": "2026-03-18T00:00:00Z",
+      "money_in_pence": 1260,
+      "money_out_pence": 0,
+      "net_flow_pence": 1260
+    },
+    {
+      "date": "2026-03-19T00:00:00Z",
+      "money_in_pence": 754,
+      "money_out_pence": 0,
+      "net_flow_pence": 754
+    },
+    {
+      "date": "2026-03-21T00:00:00Z",
+      "money_in_pence": 3464,
+      "money_out_pence": 0,
+      "net_flow_pence": 3464
+    },
+    {
+      "date": "2026-03-22T00:00:00Z",
+      "money_in_pence": 1582,
+      "money_out_pence": 0,
+      "net_flow_pence": 1582
+    },
+    {
+      "date": "2026-03-24T00:00:00Z",
+      "money_in_pence": 1679,
+      "money_out_pence": 0,
+      "net_flow_pence": 1679
+    },
+    {
+      "date": "2026-03-25T00:00:00Z",
+      "money_in_pence": 1663,
+      "money_out_pence": 0,
+      "net_flow_pence": 1663
+    },
+    {
+      "date": "2026-03-27T00:00:00Z",
+      "money_in_pence": 282,
+      "money_out_pence": 0,
+      "net_flow_pence": 282
+    },
+    {
+      "date": "2026-03-28T00:00:00Z",
+      "money_in_pence": 1380,
+      "money_out_pence": 0,
+      "net_flow_pence": 1380
+    },
+    {
+      "date": "2026-03-29T00:00:00Z",
+      "money_in_pence": 741,
+      "money_out_pence": 0,
+      "net_flow_pence": 741
+    },
+    {
+      "date": "2026-03-30T00:00:00Z",
+      "money_in_pence": 2503,
+      "money_out_pence": 0,
+      "net_flow_pence": 2503
+    },
+    {
+      "date": "2026-03-31T00:00:00Z",
+      "money_in_pence": 739,
+      "money_out_pence": 0,
+      "net_flow_pence": 739
+    }
+  ],
+  "money_in_by_category": {
+    "Eating Out": {
+      "total_pence": 14703,
+      "by_merchant": {
+        "Nando's": 321,
+        "Burger King": 1349,
+        "Starbucks": 735,
+        "KFC": 4884,
+        "Costa Coffee": 397,
+        "Subway": 754,
+        "McDonald's": 1976,
+        "Pizza Express": 2680,
+        "Greggs": 1076,
+        "Pret A Manger": 531
+      }
+    },
+    "Groceries": {
+      "total_pence": 16204,
+      "by_merchant": {
+        "Marks & Spencer": 1828,
+        "Aldi Store": 1739,
+        "Waitrose": 1278,
+        "Lidl Supermarket": 2074,
+        "Co-op Store": 1889,
+        "Asda Superstore": 3743,
+        "Sainsbury Local": 194,
+        "Morrisons Daily": 979,
+        "Iceland Foods": 2204,
+        "Tesco Superstore": 276
+      }
+    },
+    "Shopping": {
+      "total_pence": 12790,
+      "by_merchant": {
+        "IKEA": 2890,
+        "Amazon UK": 3481,
+        "Argos": 3380,
+        "Currys PC World": 863,
+        "John Lewis": 2176
+      }
+    },
+    "Transport": {
+      "total_pence": 12671,
+      "by_merchant": {
+        "Trainline": 2047,
+        "National Rail": 480,
+        "Parking Fee": 322,
+        "Uber": 374,
+        "Oyster Card": 2398,
+        "Bus Fare": 1402,
+        "Train Ticket": 1521,
+        "Bolt": 1237,
+        "TFL Travel": 719,
+        "Fuel Station": 2171
+      }
+    },
+    "Entertainment": {
+      "total_pence": 11898,
+      "by_merchant": {
+        "Gym Membership": 1201,
+        "Theatre Ticket": 3162,
+        "HBO Max": 3093,
+        "Apple Music": 581,
+        "Amazon Prime": 775,
+        "Spotify Premium": 363,
+        "Disney+": 1225,
+        "Cinema Ticket": 303,
+        "Concert Ticket": 1195
+      }
+    },
+    "Income": {
+      "total_pence": 25683,
+      "by_merchant": {
+        "Bonus Payment": 5404,
+        "Dividend Payment": 3454,
+        "Bank Transfer": 1608,
+        "Monthly Salary": 5421,
+        "Investment Return": 5260,
+        "Part-time Job": 2114,
+        "Freelance Work": 691,
+        "Salary Payment": 713,
+        "Overtime Pay": 1018
+      }
+    },
+    "Utilities": {
+      "total_pence": 8471,
+      "by_merchant": {
+        "Scottish Power": 622,
+        "Virgin Media": 906,
+        "Vodafone": 2075,
+        "O2 Mobile": 2594,
+        "EDF Energy": 1337,
+        "Sky TV": 937
+      }
+    }
+  },
+  "money_out_by_category": {
+    "Groceries": {
+      "total_pence": 998,
+      "by_merchant": {
+        "Iceland Foods": 998
+      }
+    }
+  },
+  "account_identifiers": {}
+}
