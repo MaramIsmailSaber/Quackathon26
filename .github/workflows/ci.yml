@@ -28,4 +28,4 @@ jobs:
         run: |
           node server.js &
           sleep 3
-          npm test
+          npm test 
