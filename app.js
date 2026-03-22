@@ -1,13 +1,14 @@
 /*
    FLO — Core Application Logic
    Loads all data from /app/insights.json
-   ══════════════════════════════════════════════════════ */
+ */
 
 // ── Global Data (loaded from insights.json) ──────────
 let BANK_DATA = null;       // overall insights
 let INVESTMENT_DATA = null;  // investment_demo
 let ACCOUNTS = [];           // overall.accounts
 let USER_DATA = {};          // per-user breakdowns
+let TRANSACTIONS = [];        // all transactions from all accounts
 
 // Utility Functions
 function penceToPounds(pence) {
@@ -78,30 +79,39 @@ function showToast(msg, type = 'info') {
 // State
 let activeAccountIndex = 0;
 
-// ══════════════════════════════════════════════════════
 // DATA LOADING
-// ══════════════════════════════════════════════════════
 function loadInsightsData() {
-  return fetch('/app/insights.json')
-    .then(r => r.json())
-    .then(data => {
-      BANK_DATA = data.overall;
-      INVESTMENT_DATA = data.investment_demo || null;
-      USER_DATA = data.users || {};
-      ACCOUNTS = data.overall.accounts || [];
+  return Promise.all([
+    fetch('/app/insights.json').then(r => r.json()),
+    fetch('/app/transactions.json').then(r => r.json())
+  ])
+    .then(([insightsData, txnData]) => {
+      BANK_DATA = insightsData.overall;
+      INVESTMENT_DATA = insightsData.investment_demo || null;
+      USER_DATA = insightsData.users || {};
+      ACCOUNTS = insightsData.overall.accounts || [];
+      
+      // Flatten transactions from all accounts
+      TRANSACTIONS = [];
+      if (Array.isArray(txnData)) {
+        txnData.forEach(accountTxns => {
+          if (accountTxns.transactions) {
+            TRANSACTIONS.push(...accountTxns.transactions);
+          }
+        });
+      }
 
       console.log('[OK] Bank data loaded from insights.json');
-      return data;
+      console.log('[OK] Transactions loaded:', TRANSACTIONS.length, 'total');
+      return insightsData;
     })
     .catch(err => {
-      console.error('[ERROR] Failed to load insights.json', err);
+      console.error('[ERROR] Failed to load data', err);
       showToast('Failed to load bank data', 'error');
     });
 }
 
-// ══════════════════════════════════════════════════════
 // NAVIGATION
-// ══════════════════════════════════════════════════════
 function initNavigation() {
   const navItems = document.querySelectorAll('.nav-item');
   const screens = document.querySelectorAll('.screen:not(.sub-screen)');
@@ -214,29 +224,41 @@ function updateActiveCard() {
   renderTransactionPreview();
 }
 
+function getRecentTransactions(days = 7, limit = 5) {
+  const now = new Date();
+  const weekAgo = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+  
+  return TRANSACTIONS
+    .filter(txn => new Date(txn.date) >= weekAgo)
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, limit);
+}
+
 function renderTransactionPreview() {
-  const acc = ACCOUNTS[activeAccountIndex];
   const list = document.getElementById('txn-list-preview');
+  const recentTxns = getRecentTransactions(7, 5);
 
-  // Use per_date data from the overall insights for transaction-like display
-  // Since insights.json is pre-aggregated, we show category spending instead
-  const moneyOut = BANK_DATA.money_out_by_category || {};
-  const categories = Object.entries(moneyOut).sort((a, b) => b[1].total_pence - a[1].total_pence).slice(0, 5);
+  if (recentTxns.length === 0) {
+    list.innerHTML = '<div style="padding: 16px; text-align: center; color: var(--text-dim);">No transactions this week</div>';
+    return;
+  }
 
-  list.innerHTML = categories.map(([cat, data]) => {
-    // Get top merchant for this category
-    const merchants = Object.entries(data.by_merchant).sort((a, b) => b[1] - a[1]);
-    const topMerchant = merchants[0] ? merchants[0][0] : cat;
+  list.innerHTML = recentTxns.map(txn => {
+    const account = ACCOUNTS.find(a => a.id === txn.account_id);
+    const bankName = account ? account.bank_name : 'Unknown';
+    const isDebit = txn.transaction_type === 'DEBIT';
+    const amountClass = isDebit ? 'debit' : 'credit';
+    const amountSign = isDebit ? '-' : '+';
 
     return `
     <div class="txn-item">
-      <div class="txn-icon ${cat.toLowerCase().replace(/\s+/g, '-')}">${getCategoryIcon(cat)}</div>
+      <div class="txn-icon ${txn.category.toLowerCase().replace(/\s+/g, '-')}">${getCategoryIcon(txn.category)}</div>
       <div class="txn-details">
-        <div class="txn-desc">${topMerchant}</div>
-        <div class="txn-cat">${cat} \u2022 ${merchants.length} merchant${merchants.length > 1 ? 's' : ''}</div>
+        <div class="txn-desc">${txn.description}</div>
+        <div class="txn-cat">${txn.category} \u2022 ${bankName}</div>
       </div>
-      <div class="txn-amount debit">
-        -${formatCurrency(data.total_pence)}
+      <div class="txn-amount ${amountClass}">
+        ${amountSign}${formatCurrency(txn.amount_pence)}
       </div>
     </div>
   `;
