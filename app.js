@@ -266,8 +266,67 @@ function renderTransactionPreview() {
 }
 
 // INSIGHTS SCREEN
-function initInsights() {
-  const s = BANK_DATA.summary;
+function calculateInsightsForRange(rangeId) {
+  let maxDate = new Date();
+  if (TRANSACTIONS.length > 0) {
+    maxDate = new Date(Math.max(...TRANSACTIONS.map(t => new Date(t.date).getTime())));
+  }
+  
+  const currentYear = maxDate.getFullYear();
+  const currentMonth = maxDate.getMonth();
+  
+  let startDate = new Date(0);
+  let endDate = maxDate;
+  let effectiveDays = 30;
+
+  if (rangeId === 'this_month') {
+    startDate = new Date(currentYear, currentMonth, 1);
+    endDate = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59, 999);
+    if (maxDate < endDate) endDate = maxDate;
+    effectiveDays = Math.max(1, Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)));
+  } else if (rangeId === 'last_month') {
+    startDate = new Date(currentYear, currentMonth - 1, 1);
+    endDate = new Date(currentYear, currentMonth, 0, 23, 59, 59, 999);
+    effectiveDays = Math.max(1, Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)));
+  } else {
+    // last_3_months
+    startDate = new Date(maxDate.getTime() - 90 * 24 * 60 * 60 * 1000);
+    endDate = maxDate;
+    effectiveDays = 90;
+  }
+  
+  const txns = TRANSACTIONS.filter(txn => {
+    const d = new Date(txn.date);
+    return d >= startDate && d <= endDate;
+  });
+
+  let totalIn = 0;
+  let totalOut = 0;
+  const moneyOutByCat = {};
+  
+  txns.forEach(t => {
+    if (t.transaction_type === 'CREDIT') {
+      totalIn += t.amount_pence;
+    } else if (t.transaction_type === 'DEBIT') {
+      totalOut += t.amount_pence;
+      if (!moneyOutByCat[t.category]) {
+        moneyOutByCat[t.category] = { total_pence: 0 };
+      }
+      moneyOutByCat[t.category].total_pence += t.amount_pence;
+    }
+  });
+
+  return {
+    total_money_in_pence: totalIn,
+    total_money_out_pence: totalOut,
+    net_flow_pence: totalIn - totalOut,
+    money_out_by_category: moneyOutByCat,
+    days: effectiveDays || 30
+  };
+}
+
+function updateInsights(rangeId) {
+  const s = calculateInsightsForRange(rangeId);
   const totalIn = s.total_money_in_pence;
   const totalOut = s.total_money_out_pence;
   const netFlow = s.net_flow_pence;
@@ -276,13 +335,44 @@ function initInsights() {
   document.getElementById('total-out').textContent = formatCurrency(totalOut);
   document.getElementById('net-flow').textContent = `${netFlow >= 0 ? '+' : ''}${formatCurrency(Math.abs(netFlow))}`;
 
-  renderHealthScore();
-  renderImpactStrip();
-  renderDonutChart();
+  renderHealthScore(s);
+  renderImpactStrip(s);
+  renderDonutChart(s);
 }
 
-function renderHealthScore() {
-  const s = BANK_DATA.summary;
+function initInsights() {
+  const btn = document.getElementById('time-filter-btn');
+  const menu = document.getElementById('time-filter-menu');
+  const items = document.querySelectorAll('#time-filter-menu .dropdown-item');
+
+  if (btn && menu) {
+    btn.onclick = () => menu.classList.toggle('hidden');
+    
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#insights-time-dropdown')) {
+        menu.classList.add('hidden');
+      }
+    });
+
+    items.forEach(item => {
+      item.onclick = (e) => {
+        items.forEach(i => i.classList.remove('active'));
+        e.target.classList.add('active');
+        const rangeId = e.target.dataset.range;
+        btn.innerHTML = `${e.target.textContent} <span class="dropdown-arrow">\u25BC</span>`;
+        btn.dataset.range = rangeId;
+        menu.classList.add('hidden');
+        updateInsights(rangeId);
+      };
+    });
+  }
+
+  // Initial load
+  updateInsights('last_3_months');
+}
+
+function renderHealthScore(insightsData) {
+  const s = insightsData || calculateInsightsForRange('last_3_months');
   const totalIn = s.total_money_in_pence;
   const totalOut = s.total_money_out_pence;
 
@@ -295,7 +385,8 @@ function renderHealthScore() {
   else if (ratio >= 1.0) incomeScore = 8;
 
   // 2. Rent affordability (0-25)
-  const housingCat = BANK_DATA.money_out_by_category['Housing'];
+  const moneyOutByCat = s.money_out_by_category || {};
+  const housingCat = moneyOutByCat['Housing'];
   const totalRent = housingCat ? housingCat.total_pence : 0;
   const rentPct = totalIn > 0 ? (totalRent / totalIn) * 100 : 100;
   let rentScore = 0;
@@ -304,7 +395,7 @@ function renderHealthScore() {
   else if (rentPct <= 50) rentScore = 10;
 
   // 3. Subscription load (0-25)
-  const subsCat = BANK_DATA.money_out_by_category['Subscriptions'];
+  const subsCat = moneyOutByCat['Subscriptions'];
   const totalSubs = subsCat ? subsCat.total_pence : 0;
   const subsPct = totalOut > 0 ? (totalSubs / totalOut) * 100 : 0;
   let subsScore = 0;
@@ -314,7 +405,8 @@ function renderHealthScore() {
 
   // 4. Savings buffer (0-25)
   const totalBalance = ACCOUNTS.reduce((sum, a) => sum + a.balance_pence, 0);
-  const monthlySpending = totalOut / 3; // 3 months of data
+  const days = s.days || 90;
+  const monthlySpending = (totalOut / days) * 30; // approx 1 month based on the range selected
   const bufferMonths = monthlySpending > 0 ? totalBalance / monthlySpending : 0;
   let bufferScore = 0;
   if (bufferMonths >= 3) bufferScore = 25;
@@ -414,23 +506,25 @@ function renderHealthScore() {
   }).join('');
 }
 
-function renderImpactStrip() {
-  const s = BANK_DATA.summary;
+function renderImpactStrip(insightsData) {
+  const s = insightsData || calculateInsightsForRange('last_3_months');
   const totalIn = s.total_money_in_pence;
   const totalOut = s.total_money_out_pence;
+  const moneyOutByCat = s.money_out_by_category || {};
+  const days = s.days || 90;
 
   // Subscription cost/yr
-  const subsCat = BANK_DATA.money_out_by_category['Subscriptions'];
+  const subsCat = moneyOutByCat['Subscriptions'];
   const subsTotal = subsCat ? subsCat.total_pence : 0;
-  const subsYearly = Math.round((subsTotal * 4) / 100); // 3 months data * 4 = yearly
+  const subsYearly = Math.round((subsTotal / days * 365) / 100);
 
   // Rent % of income
-  const housingCat = BANK_DATA.money_out_by_category['Housing'];
+  const housingCat = moneyOutByCat['Housing'];
   const totalRent = housingCat ? housingCat.total_pence : 0;
   const rentPct = totalIn > 0 ? (totalRent / totalIn * 100).toFixed(0) : 0;
 
-  // Daily spend (3 months ~ 90 days)
-  const dailySpend = (totalOut / 90 / 100).toFixed(2);
+  // Daily spend
+  const dailySpend = (totalOut / days / 100).toFixed(2);
 
   // Render
   const rentColor = rentPct > 40 ? 'var(--orange)' : 'var(--accent)';
@@ -470,8 +564,9 @@ function getDonutColors() {
   ];
 }
 
-function renderDonutChart() {
-  const moneyOut = BANK_DATA.money_out_by_category || {};
+function renderDonutChart(insightsData) {
+  const s = insightsData || calculateInsightsForRange('last_3_months');
+  const moneyOut = s.money_out_by_category || {};
   const sorted = Object.entries(moneyOut)
     .map(([cat, data]) => [cat, data.total_pence])
     .sort((a, b) => b[1] - a[1]);

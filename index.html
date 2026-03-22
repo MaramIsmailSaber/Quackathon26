@@ -94,8 +94,15 @@
     <section id="screen-insights" class="screen">
       <header class="screen-header-simple">
         <h1>Insights</h1>
-        <div class="time-filter">
-          <button class="filter-chip active" data-range="3m">Last 3 months</button>
+        <div class="time-filter dropdown" id="insights-time-dropdown">
+          <button class="filter-chip active dropdown-toggle" id="time-filter-btn" data-range="last_3_months">
+            Time Period<span class="dropdown-arrow">▼</span>
+          </button>
+          <div class="dropdown-menu hidden" id="time-filter-menu">
+            <button class="dropdown-item" data-range="this_month">This month</button>
+            <button class="dropdown-item" data-range="last_month">Last month</button>
+            <button class="dropdown-item active" data-range="last_3_months">Last 3 months</button>
+          </div>
         </div>
       </header>
 
