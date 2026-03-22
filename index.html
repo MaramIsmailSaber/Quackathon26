@@ -105,11 +105,24 @@
         <span>Insights are based on your recent transactions and are intended as guidance, not financial advice.</span>
       </div>
 
-      <div class="chart-section">
-        <h3>Monthly Spending Trend</h3>
-        <div class="chart-container">
-          <canvas id="spending-chart" width="340" height="180"></canvas>
+      <div class="health-score-card" id="health-score-card">
+        <div class="score-left">
+          <canvas id="score-arc" width="120" height="120"></canvas>
         </div>
+        <div class="score-right">
+          <div class="score-label">Financial Health</div>
+          <div class="score-value" id="score-value">--</div>
+          <div class="score-tag" id="score-tag">Calculating...</div>
+          <div class="score-factors" id="score-factors">
+            <!-- 4 factor rows injected by JS -->
+          </div>
+        </div>
+      </div>
+
+      <div class="impact-strip" id="impact-strip">
+        <div class="impact-stat" id="impact-subs"></div>
+        <div class="impact-stat" id="impact-rent"></div>
+        <div class="impact-stat" id="impact-daily"></div>
       </div>
 
       <div class="categories-section">

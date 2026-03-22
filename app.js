@@ -274,85 +274,181 @@ function initInsights() {
   document.getElementById('total-out').textContent = formatCurrency(totalOut);
   document.getElementById('net-flow').textContent = `${netFlow >= 0 ? '+' : ''}${formatCurrency(Math.abs(netFlow))}`;
 
-  renderSpendingChart();
+  renderHealthScore();
+  renderImpactStrip();
   renderDonutChart();
 }
 
-function renderSpendingChart() {
-  const canvas = document.getElementById('spending-chart');
+function renderHealthScore() {
+  const credits = TRANSACTIONS.filter(t => t.transaction_type === 'CREDIT');
+  const debits = TRANSACTIONS.filter(t => t.transaction_type === 'DEBIT');
+  const totalIn = credits.reduce((s, t) => s + t.amount_pence, 0);
+  const totalOut = debits.reduce((s, t) => s + t.amount_pence, 0);
+
+  // 1. Income vs spending ratio (0–25)
+  const ratio = totalOut > 0 ? totalIn / totalOut : 0;
+  let incomeScore = 0;
+  if (ratio >= 2.0) incomeScore = 25;
+  else if (ratio >= 1.5) incomeScore = 20;
+  else if (ratio >= 1.2) incomeScore = 15;
+  else if (ratio >= 1.0) incomeScore = 8;
+
+  // 2. Rent affordability (0–25)
+  const totalRent = TRANSACTIONS.filter(t => t.category === 'Housing' && t.transaction_type === 'DEBIT')
+    .reduce((s, t) => s + t.amount_pence, 0);
+  const rentPct = totalIn > 0 ? (totalRent / totalIn) * 100 : 100;
+  let rentScore = 0;
+  if (rentPct <= 30) rentScore = 25;
+  else if (rentPct <= 40) rentScore = 18;
+  else if (rentPct <= 50) rentScore = 10;
+
+  // 3. Subscription load (0–25)
+  const totalSubs = TRANSACTIONS.filter(t => t.category === 'Subscriptions' && t.transaction_type === 'DEBIT')
+    .reduce((s, t) => s + t.amount_pence, 0);
+  const subsPct = totalOut > 0 ? (totalSubs / totalOut) * 100 : 0;
+  let subsScore = 0;
+  if (subsPct <= 3) subsScore = 25;
+  else if (subsPct <= 6) subsScore = 18;
+  else if (subsPct <= 10) subsScore = 10;
+
+  // 4. Savings buffer (0–25)
+  const totalBalance = ACCOUNTS.reduce((s, a) => s + a.balance_pence, 0);
+  const monthlySpending = totalOut; // one month of data
+  const bufferMonths = monthlySpending > 0 ? totalBalance / monthlySpending : 0;
+  let bufferScore = 0;
+  if (bufferMonths >= 3) bufferScore = 25;
+  else if (bufferMonths >= 2) bufferScore = 18;
+  else if (bufferMonths >= 1) bufferScore = 10;
+
+  const score = incomeScore + rentScore + subsScore + bufferScore;
+
+  // Determine tag
+  let tag, tagColor;
+  if (score >= 75) { tag = 'Excellent'; tagColor = '#2dd4a8'; }
+  else if (score >= 50) { tag = 'Good'; tagColor = '#ffaa42'; }
+  else if (score >= 25) { tag = 'Fair'; tagColor = '#ff8c42'; }
+  else { tag = 'Needs Work'; tagColor = '#ff5c72'; }
+
+  // Arc colour
+  let arcColor;
+  if (score >= 75) arcColor = '#2dd4a8';
+  else if (score >= 50) arcColor = '#ffaa42';
+  else if (score >= 25) arcColor = '#ff8c42';
+  else arcColor = '#ff5c72';
+
+  // Draw arc on canvas
+  const canvas = document.getElementById('score-arc');
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
-  canvas.width = canvas.offsetWidth * dpr;
-  canvas.height = canvas.offsetHeight * dpr;
+  canvas.width = 120 * dpr;
+  canvas.height = 120 * dpr;
+  canvas.style.width = '120px';
+  canvas.style.height = '120px';
   ctx.scale(dpr, dpr);
 
-  const w = canvas.offsetWidth;
-  const h = canvas.offsetHeight;
+  const cx = 60, cy = 60, r = 48, lw = 10;
+  const startAngle = 0.75 * Math.PI;
+  const fullSweep = 1.5 * Math.PI;
+  const endAngleFull = startAngle + fullSweep;
+  const endAngleScore = startAngle + (score / 100) * fullSweep;
 
-  // Generate monthly spending data (simulated from transactions)
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'];
-  const values = [1200, 1450, 1380, 1520, 1280, 1600, 1420, 1350, 1480];
-
-  const padL = 10, padR = 10, padT = 20, padB = 30;
-  const chartW = w - padL - padR;
-  const chartH = h - padT - padB;
-  const maxVal = Math.max(...values) * 1.1;
-
-  // Grid lines
-  ctx.strokeStyle = 'rgba(30, 51, 85, 0.5)';
-  ctx.lineWidth = 0.5;
-  for (let i = 0; i < 4; i++) {
-    const y = padT + (chartH / 3) * i;
-    ctx.beginPath();
-    ctx.moveTo(padL, y);
-    ctx.lineTo(w - padR, y);
-    ctx.stroke();
-  }
-
-  // Data points
-  const points = values.map((v, i) => ({
-    x: padL + (chartW / (values.length - 1)) * i,
-    y: padT + chartH - (v / maxVal) * chartH
-  }));
-
-  // Area fill gradient
-  const gradient = ctx.createLinearGradient(0, padT, 0, h);
-  gradient.addColorStop(0, 'rgba(45, 212, 168, 0.25)');
-  gradient.addColorStop(1, 'rgba(45, 212, 168, 0)');
-
+  // Track
   ctx.beginPath();
-  ctx.moveTo(points[0].x, h - padB);
-  points.forEach(p => ctx.lineTo(p.x, p.y));
-  ctx.lineTo(points[points.length - 1].x, h - padB);
-  ctx.closePath();
-  ctx.fillStyle = gradient;
-  ctx.fill();
-
-  // Line
-  ctx.beginPath();
-  ctx.strokeStyle = '#2dd4a8';
-  ctx.lineWidth = 2.5;
-  ctx.lineJoin = 'round';
+  ctx.arc(cx, cy, r, startAngle, endAngleFull);
+  ctx.strokeStyle = '#1c2e4a';
+  ctx.lineWidth = lw;
   ctx.lineCap = 'round';
-  points.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
   ctx.stroke();
 
-  // Dots
-  points.forEach(p => {
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-    ctx.fillStyle = '#2dd4a8';
-    ctx.fill();
-  });
+  // Fill
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, startAngle, endAngleScore);
+  ctx.strokeStyle = arcColor;
+  ctx.lineWidth = lw;
+  ctx.lineCap = 'round';
+  ctx.stroke();
 
-  // Month labels
-  ctx.fillStyle = '#5a7093';
-  ctx.font = '11px DM Sans';
-  ctx.textAlign = 'center';
-  months.forEach((m, i) => {
-    const x = padL + (chartW / (months.length - 1)) * i;
-    ctx.fillText(m, x, h - 8);
-  });
+  // Animate score number
+  const scoreEl = document.getElementById('score-value');
+  const duration = 1000;
+  const startTime = performance.now();
+  function animateScore(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+    scoreEl.textContent = Math.round(eased * score);
+    if (progress < 1) requestAnimationFrame(animateScore);
+  }
+  requestAnimationFrame(animateScore);
+
+  // Tag
+  const tagEl = document.getElementById('score-tag');
+  tagEl.textContent = tag;
+  tagEl.style.color = tagColor;
+
+  // Score value color matches arc
+  scoreEl.style.color = arcColor;
+
+  // Factor rows
+  const factors = [
+    { name: 'Income vs Spend', pts: incomeScore, max: 25 },
+    { name: 'Rent Afford.', pts: rentScore, max: 25 },
+    { name: 'Subs Load', pts: subsScore, max: 25 },
+    { name: 'Savings Buffer', pts: bufferScore, max: 25 },
+  ];
+
+  const factorsEl = document.getElementById('score-factors');
+  factorsEl.innerHTML = factors.map(f => {
+    const pct = (f.pts / f.max) * 100;
+    const barColor = pct >= 75 ? '#2dd4a8' : pct >= 50 ? '#ffaa42' : pct >= 25 ? '#ff8c42' : '#ff5c72';
+    return `
+      <div class="score-factor">
+        <span>${f.name}</span>
+        <div class="score-factor-bar-wrap">
+          <div class="score-factor-bar" style="width:${pct}%;background:${barColor}"></div>
+        </div>
+        <span>${f.pts}/${f.max}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderImpactStrip() {
+  const debits = TRANSACTIONS.filter(t => t.transaction_type === 'DEBIT');
+  const credits = TRANSACTIONS.filter(t => t.transaction_type === 'CREDIT');
+  const totalIn = credits.reduce((s, t) => s + t.amount_pence, 0);
+  const totalOut = debits.reduce((s, t) => s + t.amount_pence, 0);
+
+  // Subscription cost/yr
+  const subsTotal = TRANSACTIONS.filter(t => t.category === 'Subscriptions' && t.transaction_type === 'DEBIT')
+    .reduce((s, t) => s + t.amount_pence, 0);
+  const subsYearly = Math.round((subsTotal * 12) / 100);
+
+  // Rent % of income
+  const totalRent = TRANSACTIONS.filter(t => t.category === 'Housing' && t.transaction_type === 'DEBIT')
+    .reduce((s, t) => s + t.amount_pence, 0);
+  const rentPct = totalIn > 0 ? (totalRent / totalIn * 100).toFixed(0) : 0;
+
+  // Daily spend (19 days of March data)
+  const dailySpend = (totalOut / 19 / 100).toFixed(2);
+
+  // Render
+  const rentColor = rentPct > 40 ? 'var(--orange)' : 'var(--accent)';
+
+  document.getElementById('impact-subs').innerHTML = `
+    <span class="impact-number">£${subsYearly}/yr</span>
+    <span class="impact-label">on subscriptions</span>
+  `;
+
+  document.getElementById('impact-rent').innerHTML = `
+    <span class="impact-number" style="color:${rentColor}">${rentPct}%</span>
+    <span class="impact-label">of income on rent</span>
+  `;
+
+  document.getElementById('impact-daily').innerHTML = `
+    <span class="impact-number">£${dailySpend}/day</span>
+    <span class="impact-label">average spend</span>
+  `;
 }
 
 function getDonutColors() {
