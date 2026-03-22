@@ -586,6 +586,98 @@ function initStockSelection() {
 // ══════════════════════════════════════════════════════
 // FLO AI CHAT
 // ══════════════════════════════════════════════════════
+
+// ─── SYSTEM PROMPT ───────────────────────────────────
+const SYSTEM_PROMPT = `You are Flo, a friendly and empathetic personal finance assistant built specifically for students and young people. Your goal is to help them understand their money, make smarter decisions, and build healthy financial habits.
+
+PERSONALITY:
+- Warm, casual, and non-judgmental — talk like a smart friend who knows finance, not a bank
+- Use simple language, avoid jargon. If you must use a financial term, explain it briefly
+- Be honest even when it's uncomfortable, but always constructive and encouraging
+- Use occasional emojis to keep it light (but don't overdo it)
+- Keep responses concise — bullet points where helpful, but don't ramble
+
+WHAT YOU CAN HELP WITH:
+- Budgeting and tracking spending patterns
+- Identifying where money is being wasted
+- Saving strategies and goal setting
+- Understanding subscriptions and recurring costs
+- Weekly/monthly budget planning
+- Simple financial habits for students
+- Explaining bills, direct debits, overdrafts in plain English
+
+WHAT YOU CANNOT DO:
+- Give regulated investment advice (stocks, crypto, etc.)
+- Predict markets or guarantee financial outcomes
+- Access external systems beyond the data provided
+
+RULES:
+- Always base your advice on the user's ACTUAL bank data provided in the context
+- Reference specific transactions, amounts, and categories when relevant — make it personal
+- Never judge lifestyle choices, just flag the financial impact
+- Always end advice with one small, actionable next step
+- If asked about investing or cryptocurrency, briefly acknowledge and redirect to budgeting first
+- Remind users you're not a licensed financial advisor when giving serious advice
+
+The user's bank data will be provided at the start of each message. Use it to give hyper-personalised, relevant advice.`;
+
+// ─── CONVERSATION HISTORY ────────────────────────────
+let conversationHistory = [];
+
+// ─── HELPERS ─────────────────────────────────────────
+function formatBankContext() {
+  const credits = TRANSACTIONS.filter(t => t.transaction_type === 'CREDIT');
+  const debits = TRANSACTIONS.filter(t => t.transaction_type === 'DEBIT');
+  const totalIn = credits.reduce((s, t) => s + t.amount_pence, 0);
+  const totalOut = debits.reduce((s, t) => s + t.amount_pence, 0);
+  const netFlow = totalIn - totalOut;
+  const totalBalance = ACCOUNTS.reduce((s, a) => s + a.balance_pence, 0);
+
+  // Category breakdown for spending
+  const catTotals = {};
+  debits.forEach(t => {
+    catTotals[t.category] = (catTotals[t.category] || 0) + t.amount_pence;
+  });
+  const sortedCats = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
+
+  // Category breakdown for income
+  const incomeCats = {};
+  credits.forEach(t => {
+    incomeCats[t.category] = (incomeCats[t.category] || 0) + t.amount_pence;
+  });
+
+  return `[USER'S REAL BANK DATA]
+Accounts: ${ACCOUNTS.length} (${ACCOUNTS.map(a => a.bank_name).join(', ')})
+Total Balance: £${(totalBalance / 100).toFixed(2)}
+Total Money In: £${(totalIn / 100).toFixed(2)}
+Total Money Out: £${(totalOut / 100).toFixed(2)}
+Net Flow: £${(netFlow / 100).toFixed(2)}
+Transactions: ${TRANSACTIONS.length}
+
+INCOME SOURCES:
+${Object.entries(incomeCats).map(([cat, pence]) => `- ${cat}: £${(pence / 100).toFixed(2)}`).join('\n')}
+
+SPENDING BY CATEGORY:
+${sortedCats.map(([cat, pence]) => `- ${cat}: £${(pence / 100).toFixed(2)} (${((pence / totalOut) * 100).toFixed(1)}%)`).join('\n')}
+
+RECENT TRANSACTIONS:
+${TRANSACTIONS.slice(0, 15).map(t => `- ${t.date.slice(0,10)} | ${t.description} | ${t.transaction_type === 'CREDIT' ? '+' : '-'}£${(t.amount_pence / 100).toFixed(2)} | ${t.category}`).join('\n')}
+[END OF BANK DATA]`;
+}
+
+function formatAIText(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/\n/g, '<br>');
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
 function initFloChat() {
   const totalBalance = ACCOUNTS.reduce((s, a) => s + a.balance_pence, 0);
   document.getElementById('flo-balance').textContent = formatCurrency(totalBalance);
@@ -594,7 +686,7 @@ function initFloChat() {
   const sendBtn = document.getElementById('chat-send');
   const messagesDiv = document.getElementById('chat-messages');
 
-  function sendMessage(text) {
+  async function sendMessage(text) {
     if (!text.trim()) return;
 
     // Add user message
@@ -619,21 +711,55 @@ function initFloChat() {
     messagesDiv.appendChild(typing);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
-    // Generate response
-    setTimeout(() => {
+    // Build messages for AI
+    const messages = [
+      { role: 'system', content: SYSTEM_PROMPT },
+      ...conversationHistory,
+      { role: 'user', content: `${formatBankContext()}\n\nUser question: ${text}` }
+    ];
+
+    try {
+      const response = await fetch('http://localhost:3000/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages })
+      });
+
+      const data = await response.json();
+      const reply = data.choices?.[0]?.message?.content?.trim()
+        || "Couldn't get a response, try again!";
+
       typing.remove();
-      const response = generateFloResponse(text.toLowerCase());
+
       const botMsg = document.createElement('div');
       botMsg.className = 'chat-msg bot';
       botMsg.innerHTML = `
         <div class="msg-avatar">
           <svg width="24" height="24" viewBox="0 0 36 36"><rect x="2" y="2" width="32" height="32" rx="10" fill="var(--accent)"/><circle cx="13" cy="15" r="2" fill="var(--bg)"/><circle cx="23" cy="15" r="2" fill="var(--bg)"/><path d="M13 22a5 5 0 0010 0" fill="none" stroke="var(--bg)" stroke-width="1.5" stroke-linecap="round"/></svg>
         </div>
-        <div class="msg-bubble">${response}</div>
+        <div class="msg-bubble">${formatAIText(reply)}</div>
       `;
       messagesDiv.appendChild(botMsg);
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }, 1200);
+
+      // Track conversation history
+      conversationHistory.push({ role: 'user', content: text });
+      conversationHistory.push({ role: 'assistant', content: reply });
+
+    } catch (err) {
+      typing.remove();
+      const errMsg = document.createElement('div');
+      errMsg.className = 'chat-msg bot';
+      errMsg.innerHTML = `
+        <div class="msg-avatar">
+          <svg width="24" height="24" viewBox="0 0 36 36"><rect x="2" y="2" width="32" height="32" rx="10" fill="var(--accent)"/><circle cx="13" cy="15" r="2" fill="var(--bg)"/><circle cx="23" cy="15" r="2" fill="var(--bg)"/><path d="M13 22a5 5 0 0010 0" fill="none" stroke="var(--bg)" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <div class="msg-bubble"><p>Hmm, something went wrong. Is the server running? Try again in a moment.</p></div>
+      `;
+      messagesDiv.appendChild(errMsg);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      console.error('Flo AI error:', err);
+    }
   }
 
   sendBtn.addEventListener('click', () => sendMessage(input.value));
@@ -645,91 +771,16 @@ function initFloChat() {
   document.querySelectorAll('.flo-chip').forEach(chip => {
     chip.addEventListener('click', () => {
       const queries = {
-        'budget': 'Can you do a budget check for me?',
-        'overspending': 'Am I overspending anywhere?',
+        'budget': 'Am I on track with my budget this month?',
+        'overspending': 'Where am I overspending?',
         'save': 'How can I save more money?',
-        'subscriptions': 'Check my subscriptions spending',
-        'weekly': 'Give me a weekly spending plan',
-        'top-expenses': 'What are my top expenses?',
+        'subscriptions': 'Should I cancel any subscriptions?',
+        'weekly': 'Give me a simple weekly budget plan',
+        'top-expenses': 'What are my biggest expenses?',
       };
       sendMessage(queries[chip.dataset.query] || chip.textContent);
     });
   });
-}
-
-function generateFloResponse(query) {
-  const allDebits = TRANSACTIONS.filter(t => t.transaction_type === 'DEBIT');
-  const totalSpent = allDebits.reduce((s, t) => s + t.amount_pence, 0);
-  const totalBalance = ACCOUNTS.reduce((s, a) => s + a.balance_pence, 0);
-
-  // Category breakdown
-  const catTotals = {};
-  allDebits.forEach(t => {
-    catTotals[t.category] = (catTotals[t.category] || 0) + t.amount_pence;
-  });
-  const sorted = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
-
-  if (query.includes('budget') || query.includes('budget check')) {
-    return `<p>Here's your budget overview for March:</p>
-    <p><strong>Total income:</strong> ${formatCurrency(TRANSACTIONS.filter(t => t.transaction_type === 'CREDIT').reduce((s, t) => s + t.amount_pence, 0))}</p>
-    <p><strong>Total spent:</strong> ${formatCurrency(totalSpent)}</p>
-    <p><strong>Balance remaining:</strong> ${formatCurrency(totalBalance)}</p>
-    <p>Your biggest expense is <strong>${sorted[0][0]}</strong> at ${formatCurrency(sorted[0][1])}. You're spending about ${formatCurrency(Math.round(totalSpent / 19))} per day on average.</p>`;
-  }
-
-  if (query.includes('overspend')) {
-    const eating = catTotals['Eating Out'] || 0;
-    const entertainment = catTotals['Entertainment'] || 0;
-    return `<p>Let me check... 🔍</p>
-    <p>Your <strong>eating out</strong> spending is ${formatCurrency(eating)} this month — that's about ${((eating / totalSpent) * 100).toFixed(1)}% of your total spending. For a student budget, you might want to aim for under £30/month.</p>
-    <p>Entertainment is at ${formatCurrency(entertainment)}. Consider free student events or DUSA activities to save here!</p>`;
-  }
-
-  if (query.includes('save') || query.includes('saving')) {
-    return `<p>Great question! Here are 3 quick wins based on your spending:</p>
-    <p><strong>1. Meal prep</strong> — You're spending ${formatCurrency(catTotals['Eating Out'] || 0)} on eating out. Batch cooking could halve that.</p>
-    <p><strong>2. Review subscriptions</strong> — You have Spotify (£5.99), Netflix (£10.99), and iCloud+ (£2.99) = ${formatCurrency((catTotals['Subscriptions'] || 0))}. Any you don't use daily?</p>
-    <p><strong>3. Transport hack</strong> — Check if a monthly bus pass saves vs. individual tickets.</p>`;
-  }
-
-  if (query.includes('subscription')) {
-    const subs = TRANSACTIONS.filter(t => t.category === 'Subscriptions');
-    const subTotal = subs.reduce((s, t) => s + t.amount_pence, 0);
-    return `<p>You have <strong>${subs.length} active subscriptions</strong> totalling ${formatCurrency(subTotal)}/month:</p>
-    ${subs.map(s => `<p>• ${s.description}: ${formatCurrency(s.amount_pence)}</p>`).join('')}
-    <p>That's ${formatCurrency(subTotal * 12)} per year! Worth reviewing if you use them all regularly.</p>`;
-  }
-
-  if (query.includes('weekly') || query.includes('plan')) {
-    const weeklyBudget = Math.round((totalBalance - 55000) / 4);
-    return `<p>Here's a suggested weekly plan based on your balance of ${formatCurrency(totalBalance)}:</p>
-    <p><strong>Rent set aside:</strong> £550.00</p>
-    <p><strong>Weekly budget:</strong> ~${formatCurrency(weeklyBudget)}</p>
-    <p>• Groceries: ~£40</p>
-    <p>• Transport: ~£15</p>
-    <p>• Fun money: ~£20</p>
-    <p>• Savings buffer: rest</p>
-    <p>Try the <strong>envelope method</strong> — withdraw your weekly budget in cash so you can physically see what's left!</p>`;
-  }
-
-  if (query.includes('top') || query.includes('expense')) {
-    return `<p>Your top spending categories this month:</p>
-    ${sorted.slice(0, 5).map(([ cat, amt ], i) => 
-      `<p><strong>${i + 1}. ${cat}</strong> — ${formatCurrency(amt)} (${((amt / totalSpent) * 100).toFixed(1)}%)</p>`
-    ).join('')}
-    <p>Housing is typically the biggest student expense — yours is ${((sorted.find(s => s[0] === 'Housing')?.[1] || 0) / totalSpent * 100).toFixed(1)}% of spending, which is within the normal range.</p>`;
-  }
-
-  // Default response
-  return `<p>That's a great question! Let me help with that.</p>
-  <p>Your combined balance is <strong>${formatCurrency(totalBalance)}</strong>. You've spent ${formatCurrency(totalSpent)} this month across ${allDebits.length} transactions.</p>
-  <p>Try asking me about your <strong>budget</strong>, <strong>subscriptions</strong>, <strong>top expenses</strong>, or how to <strong>save money</strong> — I can give you specific tips based on your actual spending!</p>`;
-}
-
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
 }
 
 // ══════════════════════════════════════════════════════
