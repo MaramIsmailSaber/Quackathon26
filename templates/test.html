@@ -382,26 +382,12 @@
 </header>
 
 <!-- Mock bank data display -->
+<!-- Balance strip - gets replaced by real data from insights.json -->
 <div class="balance-strip">
   <div class="balance-card">
-    <div class="balance-label">Current Balance</div>
-    <div class="balance-value positive">£347.82</div>
-    <div class="balance-sub">Main Account</div>
-  </div>
-  <div class="balance-card">
-    <div class="balance-label">Spent This Month</div>
-    <div class="balance-value warning">£612.40</div>
-    <div class="balance-sub">of £800 budget</div>
-  </div>
-  <div class="balance-card">
-    <div class="balance-label">Savings</div>
-    <div class="balance-value positive">£1,240.00</div>
-    <div class="balance-sub">Emergency fund</div>
-  </div>
-  <div class="balance-card">
-    <div class="balance-label">Subscriptions</div>
-    <div class="balance-value danger">£47.97/mo</div>
-    <div class="balance-sub">4 active</div>
+    <div class="balance-label">Loading...</div>
+    <div class="balance-value positive">£--</div>
+    <div class="balance-sub">Fetching your data</div>
   </div>
 </div>
 
@@ -436,48 +422,37 @@
 
 <script>
 // ─── MOCK BANK DATA ─────────────────────────────────────────────────────────
-const MOCK_BANK_DATA = {
-  user: { name: "Alex", age: 21, studentStatus: "University student, 2nd year" },
-  accounts: [
-    { name: "Main Account", balance: 347.82, currency: "GBP" },
-    { name: "Savings", balance: 1240.00, currency: "GBP" }
-  ],
-  monthlyBudget: 800,
-  monthlyIncome: 960, // student loan + part-time job
-  spentThisMonth: 612.40,
-  subscriptions: [
-    { name: "Spotify", amount: 10.99, monthly: true },
-    { name: "Netflix", amount: 17.99, monthly: true },
-    { name: "Amazon Prime", amount: 8.99, monthly: true },
-    { name: "iCloud 50GB", amount: 0.99, monthly: true }
-  ],
-  recentTransactions: [
-    { date: "2026-03-20", merchant: "Tesco", amount: -34.20, category: "Groceries" },
-    { date: "2026-03-19", merchant: "McDonald's", amount: -8.50, category: "Eating Out" },
-    { date: "2026-03-18", merchant: "ASOS", amount: -62.00, category: "Shopping" },
-    { date: "2026-03-17", merchant: "Deliveroo", amount: -22.30, category: "Eating Out" },
-    { date: "2026-03-16", merchant: "Student Loan", amount: +500.00, category: "Income" },
-    { date: "2026-03-15", merchant: "Part-time job", amount: +460.00, category: "Income" },
-    { date: "2026-03-14", merchant: "Costa Coffee", amount: -12.40, category: "Coffee" },
-    { date: "2026-03-13", merchant: "Uber", amount: -18.70, category: "Transport" },
-    { date: "2026-03-12", merchant: "Greggs", amount: -6.20, category: "Eating Out" },
-    { date: "2026-03-11", merchant: "Boots", amount: -24.50, category: "Health & Beauty" },
-    { date: "2026-03-10", merchant: "Spotify", amount: -10.99, category: "Subscriptions" },
-    { date: "2026-03-09", merchant: "Netflix", amount: -17.99, category: "Subscriptions" },
-    { date: "2026-03-08", merchant: "Pret A Manger", amount: -9.80, category: "Coffee/Food" },
-    { date: "2026-03-07", merchant: "Deliveroo", amount: -28.90, category: "Eating Out" },
-    { date: "2026-03-06", merchant: "Amazon", amount: -34.99, category: "Shopping" }
-  ],
-  spendingByCategory: [
-    { category: "Eating Out & Takeaway", total: 98.70 },
-    { category: "Shopping & Clothes", total: 96.99 },
-    { category: "Groceries", total: 87.40 },
-    { category: "Subscriptions", total: 47.97 },
-    { category: "Coffee & Snacks", total: 38.80 },
-    { category: "Transport", total: 42.30 },
-    { category: "Health & Beauty", total: 24.50 }
-  ]
-};
+let BANK_DATA = null;
+
+// Load real bank data from insights.json
+fetch('/app/insights.json')
+  .then(r => r.json())
+  .then(data => {
+    BANK_DATA = data;
+    
+    // Update the balance strip with real numbers
+    const totalIn = (data.summary.total_money_in_pence / 100).toFixed(2);
+    const totalOut = (data.summary.total_money_out_pence / 100).toFixed(2);
+    document.querySelector('.balance-strip').innerHTML = `
+      <div class="balance-card">
+        <div class="balance-label">Total In (3 months)</div>
+        <div class="balance-value positive">£${totalIn}</div>
+        <div class="balance-sub">${data.summary.transaction_count} transactions</div>
+      </div>
+      <div class="balance-card">
+        <div class="balance-label">Total Out (3 months)</div>
+        <div class="balance-value danger">£${totalOut}</div>
+        <div class="balance-sub">${data.summary.account_count} accounts</div>
+      </div>
+      <div class="balance-card">
+        <div class="balance-label">Net Flow</div>
+        <div class="balance-value positive">£${(data.summary.net_flow_pence/100).toFixed(2)}</div>
+        <div class="balance-sub">Last 3 months</div>
+      </div>
+    `;
+    console.log('✅ Bank data loaded');
+  })
+  .catch(err => console.error('❌ Failed to load insights.json', err));
 
 // ─── SYSTEM PROMPT ───────────────────────────────────────────────────────────
 const SYSTEM_PROMPT = `You are Flo, a friendly and empathetic personal finance assistant built specifically for students and young people. Your goal is to help them understand their money, make smarter decisions, and build healthy financial habits.
@@ -518,9 +493,38 @@ let conversationHistory = [];
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 function formatBankContext() {
-  return `[USER'S CURRENT FINANCIAL DATA — use this to personalise your response]
-${JSON.stringify(MOCK_BANK_DATA, null, 2)}
-[END OF FINANCIAL DATA]`;
+  if (!BANK_DATA) return '[No bank data available]';
+  
+  const s = BANK_DATA.summary;
+  const totalIn = (s.total_money_in_pence / 100).toFixed(2);
+  const totalOut = (s.total_money_out_pence / 100).toFixed(2);
+  const netFlow = (s.net_flow_pence / 100).toFixed(2);
+
+  // Convert categories to readable format
+  const categoriesIn = Object.entries(BANK_DATA.money_in_by_category).map(([cat, val]) => ({
+    category: cat,
+    total: '£' + (val.total_pence / 100).toFixed(2),
+    topMerchants: Object.entries(val.by_merchant)
+      .sort((a,b) => b[1]-a[1])
+      .slice(0,3)
+      .map(([name, pence]) => `${name} £${(pence/100).toFixed(2)}`)
+      .join(', ')
+  }));
+
+  return `[USER'S REAL BANK DATA - Last 3 months]
+Accounts: ${s.account_count}
+Total Money In: £${totalIn}
+Total Money Out: £${totalOut}
+Net Flow: £${netFlow}
+Transactions: ${s.transaction_count}
+
+SPENDING BY CATEGORY:
+${categoriesIn.map(c => `- ${c.category}: ${c.total} (top: ${c.topMerchants})`).join('\n')}
+
+MONEY OUT:
+${Object.entries(BANK_DATA.money_out_by_category).map(([cat, val]) => 
+  `- ${cat}: £${(val.total_pence/100).toFixed(2)}`).join('\n')}
+[END OF BANK DATA]`;
 }
 
 function autoResize(el) {

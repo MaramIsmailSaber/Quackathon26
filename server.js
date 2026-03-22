@@ -5,7 +5,8 @@ const cors = require('cors');
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static('.'));
+app.use(express.static('templates'));
+app.use('/app', express.static('app'));
 
 app.post('/chat', async (req, res) => {
   try {
