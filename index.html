@@ -113,8 +113,15 @@
       </div>
 
       <div class="categories-section">
-        <h3>Top Spending Categories</h3>
-        <div class="category-list" id="category-list">
+        <h3>Spending Breakdown</h3>
+        <div class="donut-chart-container">
+          <canvas id="donut-chart" width="220" height="220"></canvas>
+          <div class="donut-center-label">
+            <span class="donut-total" id="donut-total">£0</span>
+            <span class="donut-sub">total spent</span>
+          </div>
+        </div>
+        <div class="donut-legend" id="donut-legend">
           <!-- Injected by JS -->
         </div>
       </div>

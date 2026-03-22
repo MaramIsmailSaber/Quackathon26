@@ -275,7 +275,7 @@ function initInsights() {
   document.getElementById('net-flow').textContent = `${netFlow >= 0 ? '+' : ''}${formatCurrency(Math.abs(netFlow))}`;
 
   renderSpendingChart();
-  renderCategories();
+  renderDonutChart();
 }
 
 function renderSpendingChart() {
@@ -355,7 +355,22 @@ function renderSpendingChart() {
   });
 }
 
-function renderCategories() {
+function getDonutColors() {
+  return [
+    '#ffaa42', // Housing - orange
+    '#2dd4a8', // Transport - green/accent
+    '#4d9fff', // Eating Out - blue
+    '#ff5c72', // Transfers - red
+    '#e866e8', // Utilities - pink
+    '#22d3ee', // Groceries - cyan
+    '#a78bfa', // Education - purple
+    '#fbbf24', // Entertainment - yellow
+    '#5dffd0', // Subscriptions - bright green
+    '#ff9f43', // Health - light orange
+  ];
+}
+
+function renderDonutChart() {
   const debits = TRANSACTIONS.filter(t => t.transaction_type === 'DEBIT');
   const catTotals = {};
 
@@ -364,19 +379,61 @@ function renderCategories() {
   });
 
   const sorted = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
-  const maxCat = sorted[0]?.[1] || 1;
+  const totalSpent = debits.reduce((s, t) => s + t.amount_pence, 0);
+  const colors = getDonutColors();
 
-  const list = document.getElementById('category-list');
-  list.innerHTML = sorted.map(([cat, total]) => `
-    <div class="category-item">
-      <div class="cat-icon" style="background: ${getCategoryColor(cat)}22">${getCategoryIcon(cat)}</div>
-      <div class="cat-name">${cat}</div>
-      <div class="cat-bar-wrap">
-        <div class="cat-bar" style="width: ${(total / maxCat) * 100}%; background: ${getCategoryColor(cat)}"></div>
+  // Update center label
+  document.getElementById('donut-total').textContent = formatCurrency(totalSpent);
+
+  // Draw donut on canvas
+  const canvas = document.getElementById('donut-chart');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const size = 220;
+  canvas.width = size * dpr;
+  canvas.height = size * dpr;
+  canvas.style.width = size + 'px';
+  canvas.style.height = size + 'px';
+  ctx.scale(dpr, dpr);
+
+  const cx = size / 2;
+  const cy = size / 2;
+  const outerRadius = 100;
+  const innerRadius = 65;
+  let startAngle = -Math.PI / 2; // Start from top
+
+  sorted.forEach(([cat, total], i) => {
+    const sliceAngle = (total / totalSpent) * Math.PI * 2;
+    const endAngle = startAngle + sliceAngle;
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, outerRadius, startAngle, endAngle);
+    ctx.arc(cx, cy, innerRadius, endAngle, startAngle, true);
+    ctx.closePath();
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.fill();
+
+    // Add a tiny gap between segments
+    ctx.strokeStyle = '#0a1628';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    startAngle = endAngle;
+  });
+
+  // Render legend
+  const legend = document.getElementById('donut-legend');
+  legend.innerHTML = sorted.map(([cat, total], i) => {
+    const pct = ((total / totalSpent) * 100).toFixed(1);
+    return `
+      <div class="donut-legend-item">
+        <span class="legend-dot" style="background: ${colors[i % colors.length]}"></span>
+        <span class="legend-name">${cat}</span>
+        <span class="legend-amount">${formatCurrency(total)}</span>
+        <span class="legend-pct">${pct}%</span>
       </div>
-      <div class="cat-amount">${formatCurrency(total)}</div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 // ══════════════════════════════════════════════════════

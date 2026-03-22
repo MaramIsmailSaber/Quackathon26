@@ -585,6 +585,84 @@ a { color: var(--accent); text-decoration: none; }
   text-align: right;
 }
 
+/* Donut Chart */
+.donut-chart-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0;
+}
+
+.donut-chart-container canvas {
+  display: block;
+}
+
+.donut-center-label {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+.donut-total {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+
+.donut-sub {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+/* Donut Legend */
+.donut-legend {
+  margin-top: 8px;
+}
+
+.donut-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.donut-legend-item:last-child {
+  border-bottom: none;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.legend-amount {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.legend-pct {
+  font-size: 12px;
+  color: var(--text-dim);
+  width: 42px;
+  text-align: right;
+}
+
 /* ══════════════════════════════════════════════════════
    SCREEN 3: SCENARIOS
    ══════════════════════════════════════════════════════ */
