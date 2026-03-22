@@ -1,9 +1,9 @@
-/* ══════════════════════════════════════════════════════
+/*    
    FLO — Trading Simulator
    Educational stock trading with fictional companies
-   ══════════════════════════════════════════════════════ */
+   */
 
-// ── Stock Definitions ────────────────────────────────
+//  Stock Definitions 
 const STOCKS = {
   TNOV: {
     name: 'TechNova',
@@ -37,7 +37,7 @@ const TICKS_PER_DAY = 8;
 const TICK_INTERVAL_MS = 1500; // 1.5s per tick
 const STARTING_CASH = 100000; // £1000 in pence
 
-// ── Trading State ────────────────────────────────────
+//  Trading State 
 let tradingState = null;
 
 function createTradingState(selectedStocks) {
@@ -80,7 +80,7 @@ function createTradingState(selectedStocks) {
   };
 }
 
-// ── Initialise Trading ───────────────────────────────
+//  Initialise Trading 
 function initTrading(selectedStocks) {
   tradingState = createTradingState(selectedStocks);
 
@@ -90,7 +90,7 @@ function initTrading(selectedStocks) {
   startAutoPlay();
 }
 
-// ── Auto Play ────────────────────────────────────────
+//  Auto Play 
 function startAutoPlay() {
   if (tradingState.tickTimer) clearInterval(tradingState.tickTimer);
 
@@ -114,7 +114,7 @@ function stopAutoPlay() {
   }
 }
 
-// ── Render Functions ─────────────────────────────────
+//  Render Functions 
 function renderStockTabs() {
   const container = document.getElementById('stock-tabs');
   container.innerHTML = tradingState.selectedStocks.map((ticker, i) => {
@@ -343,7 +343,7 @@ function renderTradeLog() {
   }).join('');
 }
 
-// ── Trade Execution ──────────────────────────────────
+//  Trade Execution 
 function executeBuy() {
   if (!tradingState || tradingState.isComplete) return;
   const { activeStock, currentTick, priceHistories, quantity } = tradingState;
@@ -415,7 +415,7 @@ function executeSell() {
   updateTradingUI();
 }
 
-// ── End of Week ──────────────────────────────────────
+//  End of Week 
 function endTrading() {
   tradingState.isComplete = true;
 
@@ -459,7 +459,7 @@ function endTrading() {
   updateTradingUI();
 }
 
-// ── Event Listeners ──────────────────────────────────
+//  Event Listeners 
 document.addEventListener('DOMContentLoaded', () => {
   // Quantity controls
   document.getElementById('qty-minus').addEventListener('click', () => {

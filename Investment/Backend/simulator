@@ -1,0 +1,84 @@
+# simulator.py
+
+from data import SCENARIOS
+from portfolios import PORTFOLIOS
+
+
+def calculate_asset_multiplier(asset_data: dict) -> float:
+    start = asset_data["start"]
+    end = asset_data["end"]
+    return end / start
+
+
+def simulate_portfolio(scenario_id: str, portfolio_name: str, starting_amount: float = 1000.0) -> dict:
+    if scenario_id not in SCENARIOS:
+        raise ValueError(f"Unknown scenario_id: {scenario_id}")
+
+    if portfolio_name not in PORTFOLIOS:
+        raise ValueError(f"Unknown portfolio_name: {portfolio_name}")
+
+    scenario = SCENARIOS[scenario_id]
+    portfolio = PORTFOLIOS[portfolio_name]
+
+    breakdown = []
+    final_value = 0.0
+
+    for asset_name, weight in portfolio.items():
+        if asset_name not in scenario["assets"]:
+            raise ValueError(f"Asset '{asset_name}' missing from scenario '{scenario_id}'")
+
+        asset_data = scenario["assets"][asset_name]
+        multiplier = calculate_asset_multiplier(asset_data)
+        invested_amount = starting_amount * weight
+        end_value = invested_amount * multiplier
+
+        breakdown.append({
+            "asset": asset_name,
+            "weight": weight,
+            "start_price": asset_data["start"],
+            "end_price": asset_data["end"],
+            "invested_amount": round(invested_amount, 2),
+            "end_value": round(end_value, 2),
+            "return_percent": round((multiplier - 1) * 100, 2)
+        })
+
+        final_value += end_value
+
+    change = final_value - starting_amount
+    percent_change = (change / starting_amount) * 100
+
+    return {
+        "scenario": {
+            "id": scenario["id"],
+            "title": scenario["title"],
+            "type": scenario["type"],
+            "start_date": scenario["start_date"],
+            "end_date": scenario["end_date"],
+            "summary": scenario["summary"]
+        },
+        "portfolio": portfolio_name,
+        "starting_amount": round(starting_amount, 2),
+        "final_value": round(final_value, 2),
+        "change": round(change, 2),
+        "percent_change": round(percent_change, 2),
+        "breakdown": breakdown,
+        "insight_pack": {
+            "signals": scenario["signals"],
+            "hints": scenario["hints"],
+            "reflection_prompt": scenario["reflection_prompt"]
+        }
+    }
+
+
+def list_scenarios() -> list:
+    return [
+        {
+            "id": s["id"],
+            "title": s["title"],
+            "type": s["type"],
+            "start_date": s["start_date"],
+            "end_date": s["end_date"],
+            "summary": s["summary"]
+        }
+        for s in SCENARIOS.values()
+    ]

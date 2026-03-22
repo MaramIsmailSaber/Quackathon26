@@ -1,0 +1,19 @@
+# portfolios.py
+
+PORTFOLIOS = {
+    "safe": {
+        "ETF": 0.60,
+        "DEFENSIVE": 0.30,
+        "CASH": 0.10
+    },
+    "balanced": {
+        "ETF": 0.50,
+        "DEFENSIVE": 0.25,
+        "TECH": 0.25
+    },
+    "risky": {
+        "ETF": 0.20,
+        "TECH": 0.50,
+        "VOLATILE": 0.30
+    }
+}
