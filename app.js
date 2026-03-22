@@ -90,7 +90,7 @@ function loadInsightsData() {
       INVESTMENT_DATA = insightsData.investment_demo || null;
       USER_DATA = insightsData.users || {};
       ACCOUNTS = insightsData.overall.accounts || [];
-      
+
       // Flatten transactions from all accounts
       TRANSACTIONS = [];
       if (Array.isArray(txnData)) {
@@ -227,7 +227,7 @@ function updateActiveCard() {
 function getRecentTransactions(days = 7, limit = 5) {
   const now = new Date();
   const weekAgo = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-  
+
   return TRANSACTIONS
     .filter(txn => new Date(txn.date) >= weekAgo)
     .sort((a, b) => new Date(b.date) - new Date(a.date))
@@ -627,45 +627,9 @@ let conversationHistory = [];
 function formatBankContext() {
   if (!BANK_DATA) return '[No bank data available]';
 
-  const s = BANK_DATA.summary;
-  const totalIn = (s.total_money_in_pence / 100).toFixed(2);
-  const totalOut = (s.total_money_out_pence / 100).toFixed(2);
-  const netFlow = (s.net_flow_pence / 100).toFixed(2);
-
-  // Account summaries
-  const accountsSummary = ACCOUNTS.map(a =>
-    `- ${a.bank_name} (${a.account_number}): \u00A3${(a.balance_pence / 100).toFixed(2)}`
-  ).join('\n');
-
-  // Convert categories to readable format
-  const categoriesIn = Object.entries(BANK_DATA.money_in_by_category || {}).map(([cat, val]) => ({
-    category: cat,
-    total: '\u00A3' + (val.total_pence / 100).toFixed(2),
-    topMerchants: Object.entries(val.by_merchant)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
-      .map(([name, pence]) => `${name} \u00A3${(pence / 100).toFixed(2)}`)
-      .join(', ')
-  }));
-
-  return `[USER'S REAL BANK DATA]
-Accounts: ${s.account_count} (${ACCOUNTS.map(a => a.bank_name).join(', ')})
-Total Balance: \u00A3${(ACCOUNTS.reduce((sum, a) => sum + a.balance_pence, 0) / 100).toFixed(2)}
-Total Money In: \u00A3${totalIn}
-Total Money Out: \u00A3${totalOut}
-Net Flow: \u00A3${netFlow}
-Transactions: ${s.transaction_count}
-
-ACCOUNTS:
-${accountsSummary}
-
-INCOME SOURCES:
-${categoriesIn.map(c => `- ${c.category}: ${c.total} (top: ${c.topMerchants})`).join('\n')}
-
-SPENDING BY CATEGORY:
-${Object.entries(BANK_DATA.money_out_by_category || {}).map(([cat, val]) =>
-    `- ${cat}: \u00A3${(val.total_pence / 100).toFixed(2)}`).join('\n')}
-[END OF BANK DATA]`;
+  return `[BANK DATA RAW JSON]
+${JSON.stringify(BANK_DATA, null, 2)}
+[END BANK DATA]`;
 }
 
 function formatAIText(text) {
