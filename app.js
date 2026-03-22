@@ -78,19 +78,19 @@ function formatDate(isoStr) {
 
 function getCategoryIcon(cat) {
   const icons = {
-    'Groceries': '🛒',
-    'Housing': '🏠',
-    'Transport': '🚌',
-    'Entertainment': '🎭',
-    'Income': '💰',
-    'Education': '📚',
-    'Subscriptions': '📱',
-    'Transfers': '↔️',
-    'Eating Out': '🍽️',
-    'Utilities': '⚡',
-    'Health': '💊',
+    'Groceries': '\u{1F6D2}',
+    'Housing': '\u{1F3E0}',
+    'Transport': '\u{1F68C}',
+    'Entertainment': '\u{1F3AD}',
+    'Income': '\u{1F4B0}',
+    'Education': '\u{1F4DA}',
+    'Subscriptions': '\u{1F4F1}',
+    'Transfers': '\u{2194}\u{FE0F}',
+    'Eating Out': '\u{1F37D}\u{FE0F}',
+    'Utilities': '\u{26A1}',
+    'Health': '\u{1F48A}',
   };
-  return icons[cat] || '📄';
+  return icons[cat] || '\u{1F4C4}';
 }
 
 function getCategoryColor(cat) {
