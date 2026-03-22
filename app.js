@@ -1,65 +1,13 @@
 /* ══════════════════════════════════════════════════════
    FLO — Core Application Logic
-   Navigation, Accounts, Insights, Flo AI
+   Loads all data from /app/insights.json
    ══════════════════════════════════════════════════════ */
 
-// ── Mock Transaction Data (from seed_db.py) ─────────
-const ACCOUNTS = [
-  {
-    id: 'bank-a',
-    bank_name: 'Bank A',
-    sort_code: '80-22-60',
-    account_number: '12345678',
-    balance_pence: 184520,
-    currency: 'GBP',
-    holder: 'Abishik Sharma',
-  },
-  {
-    id: 'bank-b',
-    bank_name: 'Bank B',
-    sort_code: '83-41-00',
-    account_number: '87654321',
-    balance_pence: 63210,
-    currency: 'GBP',
-    holder: 'Abishik Sharma',
-  }
-];
-
-const TRANSACTIONS = [
-  // Bank A
-  { id: 't1', account_id: 'bank-a', date: '2026-03-18T20:00:00Z', description: 'Part-time Wages – Tesco Express', amount_pence: 48750, category: 'Income', transaction_type: 'CREDIT', payment_network: 'BACS Direct Credit' },
-  { id: 't2', account_id: 'bank-a', date: '2026-03-15T16:00:00Z', description: 'University of Dundee – Library Fine', amount_pence: 350, category: 'Education', transaction_type: 'DEBIT', payment_network: 'Visa Debit' },
-  { id: 't3', account_id: 'bank-a', date: '2026-03-12T11:30:00Z', description: 'Transfer to Flatmate – Utilities Share', amount_pence: 4250, category: 'Transfers', transaction_type: 'DEBIT', payment_network: 'Faster Payments' },
-  { id: 't4', account_id: 'bank-a', date: '2026-03-10T09:00:00Z', description: 'Spotify Premium – Monthly', amount_pence: 599, category: 'Subscriptions', transaction_type: 'DEBIT', payment_network: 'BACS Direct Debit' },
-  { id: 't5', account_id: 'bank-a', date: '2026-03-08T14:00:00Z', description: 'Amazon.co.uk – Textbook', amount_pence: 2499, category: 'Education', transaction_type: 'DEBIT', payment_network: 'Visa Debit' },
-  { id: 't6', account_id: 'bank-a', date: '2026-03-06T18:45:00Z', description: 'The Phoenix Bar – Drinks', amount_pence: 1620, category: 'Entertainment', transaction_type: 'DEBIT', payment_network: 'Visa Debit' },
-  { id: 't7', account_id: 'bank-a', date: '2026-03-05T10:00:00Z', description: 'Grant Property – March Rent', amount_pence: 55000, category: 'Housing', transaction_type: 'DEBIT', payment_network: 'BACS Direct Debit' },
-  { id: 't8', account_id: 'bank-a', date: '2026-03-03T08:30:00Z', description: 'Xplore Dundee – Day Ticket', amount_pence: 480, category: 'Transport', transaction_type: 'DEBIT', payment_network: 'Visa Debit' },
-  { id: 't9', account_id: 'bank-a', date: '2026-03-01T12:00:00Z', description: 'Aldi Dundee – Groceries', amount_pence: 3847, category: 'Groceries', transaction_type: 'DEBIT', payment_network: 'Visa Debit' },
-  { id: 't10', account_id: 'bank-a', date: '2026-03-01T09:00:00Z', description: 'SAAS Maintenance Loan – Spring Term', amount_pence: 191625, category: 'Income', transaction_type: 'CREDIT', payment_network: 'BACS Direct Credit' },
-
-  // Bank B
-  { id: 't11', account_id: 'bank-b', date: '2026-03-19T08:30:00Z', description: 'Pret A Manger – Morning Coffee', amount_pence: 475, category: 'Eating Out', transaction_type: 'DEBIT', payment_network: 'Visa Debit' },
-  { id: 't12', account_id: 'bank-b', date: '2026-03-18T14:00:00Z', description: 'Part-time Wages – Costa Coffee', amount_pence: 36400, category: 'Income', transaction_type: 'CREDIT', payment_network: 'BACS Direct Credit' },
-  { id: 't13', account_id: 'bank-b', date: '2026-03-17T09:00:00Z', description: 'Scottish Water – Quarterly Bill', amount_pence: 4200, category: 'Utilities', transaction_type: 'DEBIT', payment_network: 'BACS Direct Debit' },
-  { id: 't14', account_id: 'bank-b', date: '2026-03-16T19:00:00Z', description: 'Nando\'s Edinburgh – Dinner Out', amount_pence: 1845, category: 'Eating Out', transaction_type: 'DEBIT', payment_network: 'Visa Debit' },
-  { id: 't15', account_id: 'bank-b', date: '2026-03-15T11:30:00Z', description: 'Waterstones Edinburgh – Book', amount_pence: 899, category: 'Education', transaction_type: 'DEBIT', payment_network: 'Visa Debit' },
-  { id: 't16', account_id: 'bank-b', date: '2026-03-14T16:00:00Z', description: 'Transfer to Flatmate – Broadband Split', amount_pence: 1750, category: 'Transfers', transaction_type: 'DEBIT', payment_network: 'Faster Payments' },
-  { id: 't17', account_id: 'bank-b', date: '2026-03-13T12:45:00Z', description: 'Boots – Pharmacy', amount_pence: 895, category: 'Health', transaction_type: 'DEBIT', payment_network: 'Visa Debit' },
-  { id: 't18', account_id: 'bank-b', date: '2026-03-12T10:00:00Z', description: 'SAAS Maintenance Loan – Spring Term', amount_pence: 191625, category: 'Income', transaction_type: 'CREDIT', payment_network: 'BACS Direct Credit' },
-  { id: 't19', account_id: 'bank-b', date: '2026-03-11T15:00:00Z', description: 'EE Mobile – Monthly Bill', amount_pence: 1800, category: 'Utilities', transaction_type: 'DEBIT', payment_network: 'BACS Direct Debit' },
-  { id: 't20', account_id: 'bank-b', date: '2026-03-10T09:30:00Z', description: 'Apple iCloud+ – Monthly', amount_pence: 299, category: 'Subscriptions', transaction_type: 'DEBIT', payment_network: 'BACS Direct Debit' },
-  { id: 't21', account_id: 'bank-b', date: '2026-03-09T20:00:00Z', description: 'Odeon Edinburgh – Film Night', amount_pence: 1150, category: 'Entertainment', transaction_type: 'DEBIT', payment_network: 'Visa Debit' },
-  { id: 't22', account_id: 'bank-b', date: '2026-03-08T17:30:00Z', description: 'Sainsbury\'s Local – Essentials', amount_pence: 1245, category: 'Groceries', transaction_type: 'DEBIT', payment_network: 'Visa Debit' },
-  { id: 't23', account_id: 'bank-b', date: '2026-03-07T08:00:00Z', description: 'ScotRail – Edinburgh to Glasgow Return', amount_pence: 2870, category: 'Transport', transaction_type: 'DEBIT', payment_network: 'Visa Debit' },
-  { id: 't24', account_id: 'bank-b', date: '2026-03-06T13:00:00Z', description: 'Transfer from Abishik – Gig Tickets', amount_pence: 3500, category: 'Transfers', transaction_type: 'CREDIT', payment_network: 'Faster Payments' },
-  { id: 't25', account_id: 'bank-b', date: '2026-03-05T11:00:00Z', description: 'Student Accommodation Ltd – March Rent', amount_pence: 62500, category: 'Housing', transaction_type: 'DEBIT', payment_network: 'BACS Direct Debit' },
-  { id: 't26', account_id: 'bank-b', date: '2026-03-04T14:20:00Z', description: 'Greggs Edinburgh – Lunch', amount_pence: 385, category: 'Eating Out', transaction_type: 'DEBIT', payment_network: 'Visa Debit' },
-  { id: 't27', account_id: 'bank-b', date: '2026-03-03T09:00:00Z', description: 'Netflix – Monthly Subscription', amount_pence: 1099, category: 'Subscriptions', transaction_type: 'DEBIT', payment_network: 'BACS Direct Debit' },
-  { id: 't28', account_id: 'bank-b', date: '2026-03-02T19:30:00Z', description: 'Brewdog Edinburgh – Dinner', amount_pence: 2480, category: 'Eating Out', transaction_type: 'DEBIT', payment_network: 'Visa Debit' },
-  { id: 't29', account_id: 'bank-b', date: '2026-03-02T07:45:00Z', description: 'Lothian Buses – Monthly Pass', amount_pence: 5500, category: 'Transport', transaction_type: 'DEBIT', payment_network: 'Visa Debit' },
-  { id: 't30', account_id: 'bank-b', date: '2026-03-01T10:15:00Z', description: 'Lidl Edinburgh – Weekly Shop', amount_pence: 2963, category: 'Groceries', transaction_type: 'DEBIT', payment_network: 'Visa Debit' },
-];
+// ── Global Data (loaded from insights.json) ──────────
+let BANK_DATA = null;       // overall insights
+let INVESTMENT_DATA = null;  // investment_demo
+let ACCOUNTS = [];           // overall.accounts
+let USER_DATA = {};          // per-user breakdowns
 
 // ── Utility Functions ────────────────────────────────
 function penceToPounds(pence) {
@@ -68,7 +16,7 @@ function penceToPounds(pence) {
 
 function formatCurrency(pence) {
   const pounds = pence / 100;
-  return '£' + pounds.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return '\u00A3' + pounds.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function formatDate(isoStr) {
@@ -89,6 +37,10 @@ function getCategoryIcon(cat) {
     'Eating Out': '\u{1F37D}\u{FE0F}',
     'Utilities': '\u{26A1}',
     'Health': '\u{1F48A}',
+    'Shopping': '\u{1F6CD}\u{FE0F}',
+    'Travel': '\u{2708}\u{FE0F}',
+    'Savings': '\u{1F4B3}',
+    'Investments': '\u{1F4C8}',
   };
   return icons[cat] || '\u{1F4C4}';
 }
@@ -106,6 +58,10 @@ function getCategoryColor(cat) {
     'Transfers': 'var(--cyan)',
     'Health': 'var(--red)',
     'Income': 'var(--accent)',
+    'Shopping': 'var(--purple)',
+    'Travel': 'var(--blue)',
+    'Savings': 'var(--accent)',
+    'Investments': 'var(--cyan)',
   };
   return colors[cat] || 'var(--text-dim)';
 }
@@ -121,6 +77,27 @@ function showToast(msg, type = 'info') {
 
 // ── State ────────────────────────────────────────────
 let activeAccountIndex = 0;
+
+// ══════════════════════════════════════════════════════
+// DATA LOADING
+// ══════════════════════════════════════════════════════
+function loadInsightsData() {
+  return fetch('/app/insights.json')
+    .then(r => r.json())
+    .then(data => {
+      BANK_DATA = data.overall;
+      INVESTMENT_DATA = data.investment_demo || null;
+      USER_DATA = data.users || {};
+      ACCOUNTS = data.overall.accounts || [];
+
+      console.log('[OK] Bank data loaded from insights.json');
+      return data;
+    })
+    .catch(err => {
+      console.error('[ERROR] Failed to load insights.json', err);
+      showToast('Failed to load bank data', 'error');
+    });
+}
 
 // ══════════════════════════════════════════════════════
 // NAVIGATION
@@ -180,7 +157,7 @@ function initAccounts() {
   const carousel = document.getElementById('cards-carousel');
   const dotsContainer = document.getElementById('carousel-dots');
 
-  // Render cards
+  // Render cards from insights.json accounts
   ACCOUNTS.forEach((acc, i) => {
     const card = document.createElement('div');
     card.className = `bank-card ${i === 0 ? 'active-card' : ''}`;
@@ -192,8 +169,8 @@ function initAccounts() {
         ${acc.bank_name}
       </div>
       <div class="card-number">XXXX XXXX XXXX ${acc.account_number.slice(-4)}</div>
-      <div class="card-holder">${acc.holder}</div>
-      <div class="card-details-line">Sort: ${acc.sort_code} • Acc: ${acc.account_number}</div>
+      <div class="card-holder">${acc.bank_name} Account</div>
+      <div class="card-details-line">Sort: ${acc.sort_code} \u2022 Acc: ${acc.account_number}</div>
     `;
     carousel.appendChild(card);
   });
@@ -228,47 +205,54 @@ function updateActiveCard() {
   const acc = ACCOUNTS[activeAccountIndex];
   document.getElementById('balance-amount').textContent = formatCurrency(acc.balance_pence);
 
-  // Calculate weekly change (mock)
-  const accTxns = TRANSACTIONS.filter(t => t.account_id === acc.id);
-  const weekCredits = accTxns.filter(t => t.transaction_type === 'CREDIT').reduce((s, t) => s + t.amount_pence, 0);
-  const weekDebits = accTxns.filter(t => t.transaction_type === 'DEBIT').reduce((s, t) => s + t.amount_pence, 0);
-  const netWeek = weekCredits - weekDebits;
-  const sign = netWeek >= 0 ? '+' : '';
-  document.getElementById('balance-change').textContent = `${sign}${formatCurrency(Math.abs(netWeek))} this month`;
+  // Find matching per_account data for this account
+  const perAcc = BANK_DATA.per_account.find(a => a.account_id === acc.id) || {};
+  const moneyIn = perAcc.money_in_pence || 0;
+  const moneyOut = perAcc.money_out_pence || 0;
+  const netFlow = moneyIn - moneyOut;
+  const sign = netFlow >= 0 ? '+' : '';
+  document.getElementById('balance-change').textContent = `${sign}${formatCurrency(Math.abs(netFlow))} this period`;
 
   renderTransactionPreview();
 }
 
 function renderTransactionPreview() {
   const acc = ACCOUNTS[activeAccountIndex];
-  const txns = TRANSACTIONS.filter(t => t.account_id === acc.id).slice(0, 5);
   const list = document.getElementById('txn-list-preview');
 
-  list.innerHTML = txns.map(t => `
+  // Use per_date data from the overall insights for transaction-like display
+  // Since insights.json is pre-aggregated, we show category spending instead
+  const moneyOut = BANK_DATA.money_out_by_category || {};
+  const categories = Object.entries(moneyOut).sort((a, b) => b[1].total_pence - a[1].total_pence).slice(0, 5);
+
+  list.innerHTML = categories.map(([cat, data]) => {
+    // Get top merchant for this category
+    const merchants = Object.entries(data.by_merchant).sort((a, b) => b[1] - a[1]);
+    const topMerchant = merchants[0] ? merchants[0][0] : cat;
+
+    return `
     <div class="txn-item">
-      <div class="txn-icon ${t.category.toLowerCase().replace(/\s+/g, '-')}">${getCategoryIcon(t.category)}</div>
+      <div class="txn-icon ${cat.toLowerCase().replace(/\s+/g, '-')}">${getCategoryIcon(cat)}</div>
       <div class="txn-details">
-        <div class="txn-desc">${t.description}</div>
-        <div class="txn-cat">${t.category} • ${formatDate(t.date)}</div>
+        <div class="txn-desc">${topMerchant}</div>
+        <div class="txn-cat">${cat} \u2022 ${merchants.length} merchant${merchants.length > 1 ? 's' : ''}</div>
       </div>
-      <div class="txn-amount ${t.transaction_type === 'CREDIT' ? 'credit' : 'debit'}">
-        ${t.transaction_type === 'CREDIT' ? '+' : '-'}${formatCurrency(t.amount_pence)}
+      <div class="txn-amount debit">
+        -${formatCurrency(data.total_pence)}
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
 // ══════════════════════════════════════════════════════
 // INSIGHTS SCREEN
 // ══════════════════════════════════════════════════════
 function initInsights() {
-  const allTxns = TRANSACTIONS;
-  const credits = allTxns.filter(t => t.transaction_type === 'CREDIT');
-  const debits = allTxns.filter(t => t.transaction_type === 'DEBIT');
-
-  const totalIn = credits.reduce((s, t) => s + t.amount_pence, 0);
-  const totalOut = debits.reduce((s, t) => s + t.amount_pence, 0);
-  const netFlow = totalIn - totalOut;
+  const s = BANK_DATA.summary;
+  const totalIn = s.total_money_in_pence;
+  const totalOut = s.total_money_out_pence;
+  const netFlow = s.net_flow_pence;
 
   document.getElementById('total-in').textContent = formatCurrency(totalIn);
   document.getElementById('total-out').textContent = formatCurrency(totalOut);
@@ -280,12 +264,11 @@ function initInsights() {
 }
 
 function renderHealthScore() {
-  const credits = TRANSACTIONS.filter(t => t.transaction_type === 'CREDIT');
-  const debits = TRANSACTIONS.filter(t => t.transaction_type === 'DEBIT');
-  const totalIn = credits.reduce((s, t) => s + t.amount_pence, 0);
-  const totalOut = debits.reduce((s, t) => s + t.amount_pence, 0);
+  const s = BANK_DATA.summary;
+  const totalIn = s.total_money_in_pence;
+  const totalOut = s.total_money_out_pence;
 
-  // 1. Income vs spending ratio (0–25)
+  // 1. Income vs spending ratio (0-25)
   const ratio = totalOut > 0 ? totalIn / totalOut : 0;
   let incomeScore = 0;
   if (ratio >= 2.0) incomeScore = 25;
@@ -293,27 +276,27 @@ function renderHealthScore() {
   else if (ratio >= 1.2) incomeScore = 15;
   else if (ratio >= 1.0) incomeScore = 8;
 
-  // 2. Rent affordability (0–25)
-  const totalRent = TRANSACTIONS.filter(t => t.category === 'Housing' && t.transaction_type === 'DEBIT')
-    .reduce((s, t) => s + t.amount_pence, 0);
+  // 2. Rent affordability (0-25)
+  const housingCat = BANK_DATA.money_out_by_category['Housing'];
+  const totalRent = housingCat ? housingCat.total_pence : 0;
   const rentPct = totalIn > 0 ? (totalRent / totalIn) * 100 : 100;
   let rentScore = 0;
   if (rentPct <= 30) rentScore = 25;
   else if (rentPct <= 40) rentScore = 18;
   else if (rentPct <= 50) rentScore = 10;
 
-  // 3. Subscription load (0–25)
-  const totalSubs = TRANSACTIONS.filter(t => t.category === 'Subscriptions' && t.transaction_type === 'DEBIT')
-    .reduce((s, t) => s + t.amount_pence, 0);
+  // 3. Subscription load (0-25)
+  const subsCat = BANK_DATA.money_out_by_category['Subscriptions'];
+  const totalSubs = subsCat ? subsCat.total_pence : 0;
   const subsPct = totalOut > 0 ? (totalSubs / totalOut) * 100 : 0;
   let subsScore = 0;
   if (subsPct <= 3) subsScore = 25;
   else if (subsPct <= 6) subsScore = 18;
   else if (subsPct <= 10) subsScore = 10;
 
-  // 4. Savings buffer (0–25)
-  const totalBalance = ACCOUNTS.reduce((s, a) => s + a.balance_pence, 0);
-  const monthlySpending = totalOut; // one month of data
+  // 4. Savings buffer (0-25)
+  const totalBalance = ACCOUNTS.reduce((sum, a) => sum + a.balance_pence, 0);
+  const monthlySpending = totalOut / 3; // 3 months of data
   const bufferMonths = monthlySpending > 0 ? totalBalance / monthlySpending : 0;
   let bufferScore = 0;
   if (bufferMonths >= 3) bufferScore = 25;
@@ -414,29 +397,28 @@ function renderHealthScore() {
 }
 
 function renderImpactStrip() {
-  const debits = TRANSACTIONS.filter(t => t.transaction_type === 'DEBIT');
-  const credits = TRANSACTIONS.filter(t => t.transaction_type === 'CREDIT');
-  const totalIn = credits.reduce((s, t) => s + t.amount_pence, 0);
-  const totalOut = debits.reduce((s, t) => s + t.amount_pence, 0);
+  const s = BANK_DATA.summary;
+  const totalIn = s.total_money_in_pence;
+  const totalOut = s.total_money_out_pence;
 
   // Subscription cost/yr
-  const subsTotal = TRANSACTIONS.filter(t => t.category === 'Subscriptions' && t.transaction_type === 'DEBIT')
-    .reduce((s, t) => s + t.amount_pence, 0);
-  const subsYearly = Math.round((subsTotal * 12) / 100);
+  const subsCat = BANK_DATA.money_out_by_category['Subscriptions'];
+  const subsTotal = subsCat ? subsCat.total_pence : 0;
+  const subsYearly = Math.round((subsTotal * 4) / 100); // 3 months data * 4 = yearly
 
   // Rent % of income
-  const totalRent = TRANSACTIONS.filter(t => t.category === 'Housing' && t.transaction_type === 'DEBIT')
-    .reduce((s, t) => s + t.amount_pence, 0);
+  const housingCat = BANK_DATA.money_out_by_category['Housing'];
+  const totalRent = housingCat ? housingCat.total_pence : 0;
   const rentPct = totalIn > 0 ? (totalRent / totalIn * 100).toFixed(0) : 0;
 
-  // Daily spend (19 days of March data)
-  const dailySpend = (totalOut / 19 / 100).toFixed(2);
+  // Daily spend (3 months ~ 90 days)
+  const dailySpend = (totalOut / 90 / 100).toFixed(2);
 
   // Render
   const rentColor = rentPct > 40 ? 'var(--orange)' : 'var(--accent)';
 
   document.getElementById('impact-subs').innerHTML = `
-    <span class="impact-number">£${subsYearly}/yr</span>
+    <span class="impact-number">\u00A3${subsYearly}/yr</span>
     <span class="impact-label">on subscriptions</span>
   `;
 
@@ -446,7 +428,7 @@ function renderImpactStrip() {
   `;
 
   document.getElementById('impact-daily').innerHTML = `
-    <span class="impact-number">£${dailySpend}/day</span>
+    <span class="impact-number">\u00A3${dailySpend}/day</span>
     <span class="impact-label">average spend</span>
   `;
 }
@@ -463,19 +445,20 @@ function getDonutColors() {
     '#fbbf24', // Entertainment - yellow
     '#5dffd0', // Subscriptions - bright green
     '#ff9f43', // Health - light orange
+    '#c084fc', // Shopping - lavender
+    '#38bdf8', // Travel - sky blue
+    '#4ade80', // Savings - green
+    '#f472b6', // Investments - pink
   ];
 }
 
 function renderDonutChart() {
-  const debits = TRANSACTIONS.filter(t => t.transaction_type === 'DEBIT');
-  const catTotals = {};
+  const moneyOut = BANK_DATA.money_out_by_category || {};
+  const sorted = Object.entries(moneyOut)
+    .map(([cat, data]) => [cat, data.total_pence])
+    .sort((a, b) => b[1] - a[1]);
 
-  debits.forEach(t => {
-    catTotals[t.category] = (catTotals[t.category] || 0) + t.amount_pence;
-  });
-
-  const sorted = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
-  const totalSpent = debits.reduce((s, t) => s + t.amount_pence, 0);
+  const totalSpent = sorted.reduce((s, [, amt]) => s + amt, 0);
   const colors = getDonutColors();
 
   // Update center label
@@ -591,11 +574,11 @@ function initStockSelection() {
 const SYSTEM_PROMPT = `You are Flo, a friendly and empathetic personal finance assistant built specifically for students and young people. Your goal is to help them understand their money, make smarter decisions, and build healthy financial habits.
 
 PERSONALITY:
-- Warm, casual, and non-judgmental — talk like a smart friend who knows finance, not a bank
+- Warm, casual, and non-judgmental \u2014 talk like a smart friend who knows finance, not a bank
 - Use simple language, avoid jargon. If you must use a financial term, explain it briefly
 - Be honest even when it's uncomfortable, but always constructive and encouraging
 - Use occasional emojis to keep it light (but don't overdo it)
-- Keep responses concise — bullet points where helpful, but don't ramble
+- Keep responses concise \u2014 bullet points where helpful, but don't ramble
 
 WHAT YOU CAN HELP WITH:
 - Budgeting and tracking spending patterns
@@ -613,7 +596,7 @@ WHAT YOU CANNOT DO:
 
 RULES:
 - Always base your advice on the user's ACTUAL bank data provided in the context
-- Reference specific transactions, amounts, and categories when relevant — make it personal
+- Reference specific transactions, amounts, and categories when relevant \u2014 make it personal
 - Never judge lifestyle choices, just flag the financial impact
 - Always end advice with one small, actionable next step
 - If asked about investing or cryptocurrency, briefly acknowledge and redirect to budgeting first
@@ -626,42 +609,46 @@ let conversationHistory = [];
 
 // ─── HELPERS ─────────────────────────────────────────
 function formatBankContext() {
-  const credits = TRANSACTIONS.filter(t => t.transaction_type === 'CREDIT');
-  const debits = TRANSACTIONS.filter(t => t.transaction_type === 'DEBIT');
-  const totalIn = credits.reduce((s, t) => s + t.amount_pence, 0);
-  const totalOut = debits.reduce((s, t) => s + t.amount_pence, 0);
-  const netFlow = totalIn - totalOut;
-  const totalBalance = ACCOUNTS.reduce((s, a) => s + a.balance_pence, 0);
+  if (!BANK_DATA) return '[No bank data available]';
 
-  // Category breakdown for spending
-  const catTotals = {};
-  debits.forEach(t => {
-    catTotals[t.category] = (catTotals[t.category] || 0) + t.amount_pence;
-  });
-  const sortedCats = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
+  const s = BANK_DATA.summary;
+  const totalIn = (s.total_money_in_pence / 100).toFixed(2);
+  const totalOut = (s.total_money_out_pence / 100).toFixed(2);
+  const netFlow = (s.net_flow_pence / 100).toFixed(2);
 
-  // Category breakdown for income
-  const incomeCats = {};
-  credits.forEach(t => {
-    incomeCats[t.category] = (incomeCats[t.category] || 0) + t.amount_pence;
-  });
+  // Account summaries
+  const accountsSummary = ACCOUNTS.map(a =>
+    `- ${a.bank_name} (${a.account_number}): \u00A3${(a.balance_pence / 100).toFixed(2)}`
+  ).join('\n');
+
+  // Convert categories to readable format
+  const categoriesIn = Object.entries(BANK_DATA.money_in_by_category || {}).map(([cat, val]) => ({
+    category: cat,
+    total: '\u00A3' + (val.total_pence / 100).toFixed(2),
+    topMerchants: Object.entries(val.by_merchant)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([name, pence]) => `${name} \u00A3${(pence / 100).toFixed(2)}`)
+      .join(', ')
+  }));
 
   return `[USER'S REAL BANK DATA]
-Accounts: ${ACCOUNTS.length} (${ACCOUNTS.map(a => a.bank_name).join(', ')})
-Total Balance: £${(totalBalance / 100).toFixed(2)}
-Total Money In: £${(totalIn / 100).toFixed(2)}
-Total Money Out: £${(totalOut / 100).toFixed(2)}
-Net Flow: £${(netFlow / 100).toFixed(2)}
-Transactions: ${TRANSACTIONS.length}
+Accounts: ${s.account_count} (${ACCOUNTS.map(a => a.bank_name).join(', ')})
+Total Balance: \u00A3${(ACCOUNTS.reduce((sum, a) => sum + a.balance_pence, 0) / 100).toFixed(2)}
+Total Money In: \u00A3${totalIn}
+Total Money Out: \u00A3${totalOut}
+Net Flow: \u00A3${netFlow}
+Transactions: ${s.transaction_count}
+
+ACCOUNTS:
+${accountsSummary}
 
 INCOME SOURCES:
-${Object.entries(incomeCats).map(([cat, pence]) => `- ${cat}: £${(pence / 100).toFixed(2)}`).join('\n')}
+${categoriesIn.map(c => `- ${c.category}: ${c.total} (top: ${c.topMerchants})`).join('\n')}
 
 SPENDING BY CATEGORY:
-${sortedCats.map(([cat, pence]) => `- ${cat}: £${(pence / 100).toFixed(2)} (${((pence / totalOut) * 100).toFixed(1)}%)`).join('\n')}
-
-RECENT TRANSACTIONS:
-${TRANSACTIONS.slice(0, 15).map(t => `- ${t.date.slice(0,10)} | ${t.description} | ${t.transaction_type === 'CREDIT' ? '+' : '-'}£${(t.amount_pence / 100).toFixed(2)} | ${t.category}`).join('\n')}
+${Object.entries(BANK_DATA.money_out_by_category || {}).map(([cat, val]) =>
+    `- ${cat}: \u00A3${(val.total_pence / 100).toFixed(2)}`).join('\n')}
 [END OF BANK DATA]`;
 }
 
@@ -713,9 +700,9 @@ function initFloChat() {
 
     // Build messages for AI
     const messages = [
-      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'system', content: SYSTEM_PROMPT + '\n\n' + formatBankContext() },
       ...conversationHistory,
-      { role: 'user', content: `${formatBankContext()}\n\nUser question: ${text}` }
+      { role: 'user', content: text }
     ];
 
     try {
@@ -794,9 +781,9 @@ function initQuickActions() {
         const acc = ACCOUNTS[activeAccountIndex];
         showToast(`${acc.bank_name}: Sort ${acc.sort_code}, Acc ${acc.account_number}`, 'info');
       } else if (action === 'send') {
-        showToast('Send money — coming soon!', 'info');
+        showToast('Send money \u2014 coming soon!', 'info');
       } else if (action === 'manage') {
-        showToast('Account management — coming soon!', 'info');
+        showToast('Account management \u2014 coming soon!', 'info');
       }
     });
   });
@@ -811,10 +798,14 @@ function initQuickActions() {
 // INIT
 // ══════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
-  initNavigation();
-  initAccounts();
-  initInsights();
-  initScenarios();
-  initFloChat();
-  initQuickActions();
+  // Load data first, then init everything
+  loadInsightsData().then(() => {
+    if (!BANK_DATA) return;
+    initNavigation();
+    initAccounts();
+    initInsights();
+    initScenarios();
+    initFloChat();
+    initQuickActions();
+  });
 });
