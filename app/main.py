@@ -4,7 +4,7 @@ from collections import defaultdict
 
 INPUT_FILE = "transactions.json"
 OUTPUT_FILE = "insights.json"
-
+#test comment
 
 def is_money_in(transaction: Dict[str, Any]) -> bool:
     transaction_type = (transaction.get("transaction_type") or "").upper()
