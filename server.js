@@ -5,7 +5,7 @@ const cors = require('cors');
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static('templates'));
+app.use(express.static('.'));
 app.use('/app', express.static('app'));
 
 app.post('/chat', async (req, res) => {
@@ -14,12 +14,12 @@ app.post('/chat', async (req, res) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ${process.env.GROQ_API_KEY}'
+        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
       },
       body: JSON.stringify({
-
-model: 'llama-3.3-70b-versatile',        messages: req.body.messages,
-        max_tokens: 500,
+        model: 'llama-3.3-70b-versatile',
+        messages: req.body.messages,
+        max_tokens: 1500
       })
     });
     const data = await response.json();
