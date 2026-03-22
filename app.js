@@ -1,4 +1,4 @@
-/* ══════════════════════════════════════════════════════
+/*
    FLO — Core Application Logic
    Loads all data from /app/insights.json
    ══════════════════════════════════════════════════════ */
@@ -9,7 +9,7 @@ let INVESTMENT_DATA = null;  // investment_demo
 let ACCOUNTS = [];           // overall.accounts
 let USER_DATA = {};          // per-user breakdowns
 
-// ── Utility Functions ────────────────────────────────
+// Utility Functions
 function penceToPounds(pence) {
   return (pence / 100).toFixed(2);
 }
@@ -75,7 +75,7 @@ function showToast(msg, type = 'info') {
   setTimeout(() => toast.remove(), 3000);
 }
 
-// ── State ────────────────────────────────────────────
+// State
 let activeAccountIndex = 0;
 
 // ══════════════════════════════════════════════════════
@@ -150,9 +150,7 @@ function navigateToSubScreen(screenId) {
   document.getElementById(screenId).classList.add('active');
 }
 
-// ══════════════════════════════════════════════════════
 // ACCOUNTS SCREEN
-// ══════════════════════════════════════════════════════
 function initAccounts() {
   const carousel = document.getElementById('cards-carousel');
   const dotsContainer = document.getElementById('carousel-dots');
@@ -245,9 +243,7 @@ function renderTransactionPreview() {
   }).join('');
 }
 
-// ══════════════════════════════════════════════════════
 // INSIGHTS SCREEN
-// ══════════════════════════════════════════════════════
 function initInsights() {
   const s = BANK_DATA.summary;
   const totalIn = s.total_money_in_pence;
@@ -515,9 +511,8 @@ function renderDonutChart() {
   }).join('');
 }
 
-// ══════════════════════════════════════════════════════
+
 // SCENARIOS SCREEN
-// ══════════════════════════════════════════════════════
 function initScenarios() {
   document.getElementById('tile-investment').addEventListener('click', () => {
     navigateToSubScreen('screen-invest-learn');
@@ -566,11 +561,10 @@ function initStockSelection() {
   });
 }
 
-// ══════════════════════════════════════════════════════
-// FLO AI CHAT
-// ══════════════════════════════════════════════════════
 
-// ─── SYSTEM PROMPT ───────────────────────────────────
+// FLO AI CHAT
+
+// SYSTEM PROMPT
 const SYSTEM_PROMPT = `You are Flo, a friendly and empathetic personal finance assistant built specifically for students and young people. Your goal is to help them understand their money, make smarter decisions, and build healthy financial habits.
 
 PERSONALITY:
@@ -604,10 +598,10 @@ RULES:
 
 The user's bank data will be provided at the start of each message. Use it to give hyper-personalised, relevant advice.`;
 
-// ─── CONVERSATION HISTORY ────────────────────────────
+// CONVERSATION HISTORY
 let conversationHistory = [];
 
-// ─── HELPERS ─────────────────────────────────────────
+// HELPERS
 function formatBankContext() {
   if (!BANK_DATA) return '[No bank data available]';
 
@@ -770,9 +764,7 @@ function initFloChat() {
   });
 }
 
-// ══════════════════════════════════════════════════════
 // QUICK ACTIONS
-// ══════════════════════════════════════════════════════
 function initQuickActions() {
   document.querySelectorAll('.action-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -794,9 +786,7 @@ function initQuickActions() {
   });
 }
 
-// ══════════════════════════════════════════════════════
 // INIT
-// ══════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   // Load data first, then init everything
   loadInsightsData().then(() => {
